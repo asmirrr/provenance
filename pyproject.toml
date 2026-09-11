@@ -1,7 +1,7 @@
 [project]
 name = "provenance"
 version = "0.1.0"
-description = "Add your description here"
+description = "Traceable financial document ingestion for evidence-grounded research"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -19,6 +19,12 @@ class Chunk(BaseModel):
     filing_date: str
 
     # Location within the source
-    section: str
+    section: str | None = None
     page: int
     source_path: str
+    source_sha256: str = ""
+    source_url: str = ""
+    printed_page: int | None = None
+    # Half-open character offsets in the persisted raw PDF page extraction.
+    raw_start: int = 0
+    raw_end: int = 0
