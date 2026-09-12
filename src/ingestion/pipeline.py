@@ -6,6 +6,7 @@ import json
 import re
 from datetime import date
 from pathlib import Path
+from typing import Literal
 
 import pdfplumber
 from pydantic import BaseModel, Field
@@ -36,6 +37,8 @@ class ProcessedFiling(BaseModel):
     schema_version: int = 1
     extractor: str
     max_chars: int
+    # Missing in the first persisted format: preserve its historical meaning.
+    chunking: Literal["line-v1", "sentence-v2"] = "line-v1"
     metadata: FilingMetadata
     source_path: str
     source_sha256: str
@@ -58,8 +61,8 @@ def clean_page(raw: str, metadata: FilingMetadata, page: int) -> PageText:
                     printed_page=int(footer[1]) if footer else None)
 
 
-def spans(text: str, start: int, end: int, max_chars: int):
-    """Prefer line boundaries, then whitespace; hard-split only oversized tokens."""
+def spans(text: str, start: int, end: int, max_chars: int, chunking: str = "sentence-v2"):
+    """Prefer sentence ends, then lines/whitespace; never alter source text."""
     while start < end:
         while start < end and text[start].isspace():
             start += 1
@@ -67,7 +70,21 @@ def spans(text: str, start: int, end: int, max_chars: int):
             break
         stop = min(start + max_chars, end)
         if stop < end:
-            boundary = text.rfind("\n", start + max_chars // 2, stop + 1)
+            boundary = -1
+            if chunking == "sentence-v2":
+                for match in re.finditer(r'''[.!?][”"’')\]]*(?=\s|$)''', text[start:end]):
+                    candidate = start + match.end()
+                    if candidate > stop:
+                        break
+                    # Avoid obvious financial abbreviations, not a full NLP
+                    # sentence tokenizer. Decimal punctuation lacks whitespace.
+                    prefix = text[start:candidate]
+                    if re.search(r"(?:\b(?:[A-Za-z]\.){2,}|\b(?:Inc|Corp|Ltd|Mr|Mrs|Dr)\.)$", prefix):
+                        continue
+                    if candidate >= start + max_chars // 2:
+                        boundary = candidate
+            if boundary < 0:
+                boundary = text.rfind("\n", start + max_chars // 2, stop + 1)
             if boundary < 0:
                 boundaries = list(re.finditer(r"\s", text[start:stop + 1]))
                 boundary = start + boundaries[-1].start() if boundaries else -1
@@ -81,9 +98,12 @@ def spans(text: str, start: int, end: int, max_chars: int):
         start = stop
 
 
-def ingest(pdf_path: str | Path, metadata: FilingMetadata, max_chars: int = 1800) -> ProcessedFiling:
+def ingest(pdf_path: str | Path, metadata: FilingMetadata, max_chars: int = 1800,
+           chunking: str = "sentence-v2") -> ProcessedFiling:
     if max_chars < 100:
         raise ValueError("max_chars must be at least 100")
+    if chunking not in {"line-v1", "sentence-v2"}:
+        raise ValueError("Unknown chunking strategy")
     path = Path(pdf_path)
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     pages = [clean_page(p["text"], metadata, p["page"]) for p in extract_pages(path)]
@@ -109,7 +129,7 @@ def ingest(pdf_path: str | Path, metadata: FilingMetadata, max_chars: int = 1800
             cursor = heading.start()
         segments.append((cursor, len(text), section))
         for start, end, label in segments:
-            for left, right in spans(text, start, end, max_chars):
+            for left, right in spans(text, start, end, max_chars, chunking):
                 raw_start, raw_end = page.raw_start + left, page.raw_start + right
                 identity = f"{digest}:{page.page}:{raw_start}:{raw_end}"
                 chunks.append(Chunk(
@@ -122,7 +142,7 @@ def ingest(pdf_path: str | Path, metadata: FilingMetadata, max_chars: int = 1800
         if in_exhibits:
             section = None
     return ProcessedFiling(
-        extractor=f"pdfplumber {pdfplumber.__version__}", max_chars=max_chars,
+        extractor=f"pdfplumber {pdfplumber.__version__}", max_chars=max_chars, chunking=chunking,
         metadata=metadata, source_path=path.as_posix(), source_sha256=digest,
         pages=pages, chunks=chunks,
         warnings=[f"PDF page {p.page} has no extractable text; OCR was not run" for p in pages if not p.text],
@@ -135,9 +155,12 @@ def main():
     parser.add_argument("metadata", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--max-chars", type=int, default=1800)
+    parser.add_argument("--chunking", choices=["line-v1", "sentence-v2"], default="sentence-v2")
     args = parser.parse_args()
     metadata = FilingMetadata.model_validate_json(args.metadata.read_text(encoding="utf-8"))
-    result = ingest(args.pdf, metadata, args.max_chars)
+    if args.output.resolve() in {args.pdf.resolve(), args.metadata.resolve()}:
+        parser.error("Output must not overwrite the source PDF or metadata")
+    result = ingest(args.pdf, metadata, args.max_chars, args.chunking)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(result.model_dump_json(indent=2), encoding="utf-8")
     print(json.dumps({"pages": len(result.pages), "chunks": len(result.chunks), "warnings": result.warnings}))

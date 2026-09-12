@@ -2,7 +2,8 @@
 
 Traceable financial intelligence, built from source evidence upward. The current
 milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
-chunks. Retrieval, LLMs, and claim verification are intentionally not implemented.
+chunks, with an offline evidence-context diagnostic set. Retrieval, LLMs, and claim
+verification are intentionally not implemented.
 
 ## Run locally (PowerShell)
 
@@ -30,7 +31,7 @@ otherwise. Synthetic unit-test strings are fixtures, not financial research data
 
 ## Representation and citation contract
 
-One JSON file contains metadata, source SHA-256, parser version, chunk size,
+One JSON file contains metadata, source SHA-256, parser version, chunking strategy, chunk size,
 warnings, every raw and cleaned page, and validated `Chunk` objects. Reopen it with
 `ProcessedFiling.model_validate_json(path.read_text(encoding="utf-8"))`.
 
@@ -46,9 +47,13 @@ warnings, every raw and cleaned page, and validated `Chunk` objects. Reopen it w
 - Chunk IDs are SHA-256 of source digest, PDF page, and raw offsets. Reprocessing
   the same source and settings produces the same IDs. Metadata includes company,
   ticker, fiscal year, filing date, document type, source URL, and local path.
-- Chunks default to at most 1,800 characters, prefer line boundaries in the latter
-  half of the window, then whitespace, and hard-split only oversized tokens. There
-  is no overlap. All non-whitespace cleaned text is covered in source order.
+- Chunks default to at most 1,800 characters. `sentence-v2` prefers sentence endings
+  in the latter half of the window, then line boundaries and whitespace, and
+  hard-splits only oversized tokens. Obvious abbreviations such as `U.S.` and
+  `Inc.` are excluded; this is a heuristic, not a complete sentence tokenizer.
+  There is no overlap. All non-whitespace cleaned text is covered in source order.
+  `--chunking line-v1` reproduces the initial line-based baseline. Older JSON files
+  without a strategy field are interpreted as `line-v1`.
 
 ## Observed extraction and preprocessing
 
@@ -70,6 +75,54 @@ parenthesized negatives, bullets, standalone numbers, and hyphenation remain int
 No OCR, inferred financial values, dehyphenation, or broad header/footer deletion
 is performed. Empty pages produce warnings; all-empty documents fail explicitly.
 
-The next milestone should evaluate citation and chunk quality on a small manually
-checked set of passages and financial tables from this filing, especially whether
-table headers need to stay with rows, before adding retrieval.
+## Evaluate evidence context
+
+Eight source-backed cases in `data/evaluation/aapl-2024-10k.json` select verbatim
+fragments independently of chunk boundaries: financial values plus their years,
+units and headings, and two prose passages with their headings. The source PDF
+SHA-256 is pinned. These cases were selected and checked by the coding agent against
+the raw extraction; they are **not human-annotated ground truth or a held-out benchmark**.
+They include known failures deliberately and should not be interpreted as a sample
+of overall filing accuracy. No LLM calls or additional dependencies are required.
+
+```powershell
+uv run python -m src.evaluation data/processed/aapl-2024-10k.json data/evaluation/aapl-2024-10k.json --output data/processed/chunk-quality-after.json
+```
+
+To reproduce the original comparison, without replacing the current ingestion:
+
+```powershell
+uv run python -m src.ingestion.pipeline data/raw/aapl-2024-10k.pdf data/raw/aapl-2024-10k.metadata.json data/processed/aapl-2024-10k-line-v1.json --chunking line-v1
+uv run python -m src.evaluation data/processed/aapl-2024-10k-line-v1.json data/evaluation/aapl-2024-10k.json --output data/processed/chunk-quality-before.json
+```
+
+Measured with pdfplumber 0.11.10 and a 1,800-character limit:
+
+| Diagnostic | line-v1 | sentence-v2 |
+| --- | ---: | ---: |
+| Filing chunks | 302 | 314 |
+| Cases with all evidence in one chunk | 3 / 8 | 7 / 8 |
+| Cases with all evidence on the cleaned page | 8 / 8 | 8 / 8 |
+| Cases with expected SEC section labels | 8 / 8 | 8 / 8 |
+
+The evaluator returns exact page spans and chunk IDs for each case. Missing or
+ambiguous quote anchors, source-digest mismatches and invalid chunk-to-raw-text
+citations fail instead of receiving a score. It validates against the stored raw
+text; it does not independently authenticate the PDF or re-extract it. Page context
+completeness is an upper bound on available context, not retrieval performance.
+
+The new strategy keeps the SG&A heading with its sentence on PDF page 27 and the
+repatriation-tax passage together on page 28. It also improves the selected table
+cases on pages 39 and 48 by placing boundaries before their introductions. This does
+not amount to table detection: some long tables still require multiple chunks, and
+financial note headings remain under their containing SEC Item label.
+
+The remaining failure is PDF page 36: units, years and the supplemental cash tax
+payment row span 2,085 characters, exceeding the chunk limit. The next milestone
+should add explicitly cited context for table continuations and review a broader
+set of passages before introducing a retrieval baseline. Merely increasing chunk
+size until these eight cases pass would not establish general quality.
+
+Provenance's source-traceability direction is conceptually informed by
+[attestddq](https://github.com/ayushcl/attestddq/); its implementation and real SEC
+filing evaluation are developed independently.

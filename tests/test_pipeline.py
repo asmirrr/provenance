@@ -74,7 +74,7 @@ def test_empty_document_rejected(tmp_path, monkeypatch, metadata):
         ingest(path, metadata, 0)
 
 
-def test_real_filing():
+def test_real_filing(monkeypatch):
     """Offline integration test; download the documented source to enable it."""
     root = Path(__file__).resolve().parents[1]
     pdf = root / "data/raw/aapl-2024-10k.pdf"
@@ -98,3 +98,33 @@ def test_real_filing():
     assert all(c.section is None for c in result.chunks if c.page > 60)
     assert all(c.section == "Item 8. Financial Statements and Supplementary Data"
                for c in result.chunks if c.page == 32)
+    # Compare strategies on exactly the same real extracted pages, without
+    # repeating PDF extraction or pinning case locations to generated chunks.
+    from src.evaluation import EvidenceCases, evaluate
+    cases = EvidenceCases.model_validate_json(
+        (root / "data/evaluation/aapl-2024-10k.json").read_text(encoding="utf-8")
+    )
+    monkeypatch.setattr(pipeline, "extract_pages", lambda _: [
+        {"page": p.page, "text": p.raw_text} for p in result.pages
+    ])
+    baseline = ingest(pdf, metadata, chunking="line-v1")
+    before, after = evaluate(baseline, cases), evaluate(result, cases)
+    assert before["single_chunk_complete"] == 3
+    assert after["single_chunk_complete"] == 7
+    assert after["section_correct"] == after["page_context_complete"] == 8
+    assert [r["case_id"] for r in after["results"] if not r["single_chunk_complete"]] == ["cash-tax-payment"]
+
+
+def test_sentence_boundary_preserves_following_heading():
+    text = "Prior discussion " + "word " * 10 + ".\nNext Heading\n" + "following " * 8
+    parts = [text[a:b] for a, b in spans(text, 0, len(text), 100)]
+    assert parts[0].endswith(".")
+    assert parts[1].startswith("Next Heading\n")
+    assert "".join("".join(parts).split()) == "".join(text.split())
+
+
+@pytest.mark.parametrize("abbreviation", ["U.S.", "Inc.", "Corp."])
+def test_abbreviations_are_not_sentence_boundaries(abbreviation):
+    text = "Intro " + "word " * 10 + abbreviation + " market continued with growth\nand more words after that."
+    first = next(spans(text, 0, len(text), 100))
+    assert not text[first[0]:first[1]].endswith(abbreviation)

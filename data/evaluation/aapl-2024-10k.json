@@ -1,0 +1,62 @@
+{
+  "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
+  "review_method": "Agent-selected and checked against the real filing's raw extraction. These eight diagnostic cases are not human-annotated ground truth, a held-out benchmark, or an answer-accuracy evaluation.",
+  "cases": [
+    {
+      "case_id": "segment-sales",
+      "description": "Segment sales retain units, year columns and Greater China row.",
+      "page": 25,
+      "section": "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations",
+      "evidence": ["(dollars in millions):", "2024 Change 2023 Change 2022", "Greater China 66,952 (8) % 72,559 (2) % 74,200"]
+    },
+    {
+      "case_id": "net-income",
+      "description": "Net income retains the statement's units and year columns.",
+      "page": 32,
+      "section": "Item 8. Financial Statements and Supplementary Data",
+      "evidence": ["(In millions, except number of shares, which are reflected in thousands, and per-share amounts)", "2024 2023 2022", "Net income $ 93,736 $ 96,995 $ 99,803"]
+    },
+    {
+      "case_id": "total-assets",
+      "description": "Total assets retain balance sheet units and year columns.",
+      "page": 34,
+      "section": "Item 8. Financial Statements and Supplementary Data",
+      "evidence": ["(In millions, except number of shares, which are reflected in thousands, and par value)", "2024 2023", "Total assets $ 364,980 $ 352,583"]
+    },
+    {
+      "case_id": "sga-discussion",
+      "description": "The administrative expense heading stays with its explanatory sentence.",
+      "page": 27,
+      "section": "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations",
+      "evidence": ["Selling, General and Administrative", "Selling, general and administrative expense increased $1.2 billion during 2024 compared to 2023."]
+    },
+    {
+      "case_id": "repatriation-tax",
+      "description": "The tax obligation's heading, date, law and payment amounts remain together.",
+      "page": 28,
+      "section": "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations",
+      "evidence": ["Deemed Repatriation Tax Payable", "As of September 28, 2024, the balance of the deemed repatriation tax payable imposed by the U.S. Tax Cuts and Jobs Act of\n2017 (the “TCJA”) was $16.5 billion, with $7.2 billion expected to be paid within 12 months."]
+    },
+    {
+      "case_id": "cash-tax-payment",
+      "description": "Supplemental cash tax payments retain cash flow units and years.",
+      "page": 36,
+      "section": "Item 8. Financial Statements and Supplementary Data",
+      "evidence": ["(In millions)", "2024 2023 2022", "Cash paid for income taxes, net $ 26,102 $ 18,679 $ 19,573"]
+    },
+    {
+      "case_id": "investment-columns",
+      "description": "The investment table preserves its date, units and multiline header with the cash row.",
+      "page": 39,
+      "section": "Item 8. Financial Statements and Supplementary Data",
+      "evidence": ["as of September 28, 2024 and September 30, 2023 (in millions):\n2024", "Adjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities", "Cash $ 27,199 $ — $ — $ 27,199 $ 27,199 $ — $ —"]
+    },
+    {
+      "case_id": "share-compensation",
+      "description": "Share-based compensation retains its units and years with the expense row.",
+      "page": 48,
+      "section": "Item 8. Financial Statements and Supplementary Data",
+      "evidence": ["Statements of Operations for 2024, 2023 and 2022 (in millions):", "2024 2023 2022", "Share-based compensation expense $ 11,688 $ 10,833 $ 9,038"]
+    }
+  ]
+}
