@@ -122,7 +122,3 @@ payment row span 2,085 characters, exceeding the chunk limit. The next milestone
 should add explicitly cited context for table continuations and review a broader
 set of passages before introducing a retrieval baseline. Merely increasing chunk
 size until these eight cases pass would not establish general quality.
-
-Provenance's source-traceability direction is conceptually informed by
-[attestddq](https://github.com/ayushcl/attestddq/); its implementation and real SEC
-filing evaluation are developed independently.
