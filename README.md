@@ -117,8 +117,89 @@ cases on pages 39 and 48 by placing boundaries before their introductions. This 
 not amount to table detection: some long tables still require multiple chunks, and
 financial note headings remain under their containing SEC Item label.
 
-The remaining failure is PDF page 36: units, years and the supplemental cash tax
-payment row span 2,085 characters, exceeding the chunk limit. The next milestone
-should add explicitly cited context for table continuations and review a broader
-set of passages before introducing a retrieval baseline. Merely increasing chunk
-size until these eight cases pass would not establish general quality.
+The remaining single-chunk failure is PDF page 36: units, years and the supplemental
+cash tax payment row span 2,085 characters, exceeding the chunk limit. This is now
+handled by an explicit page-context option, described below; the original chunk
+diagnostic remains 7/8. Merely increasing chunk size until these eight cases pass
+would not establish general quality.
+
+## Cited context for long tables
+
+`src.evidence` resolves selected chunk IDs without searching or generating answers.
+The default returns only those chunks. `--context page` returns each selected
+chunk's entire cleaned page as a separately cited span, deduplicating repeated
+pages. Source metadata, PDF/printed page numbers and exact raw offsets accompany
+the text. Page context can contain multiple SEC Items, so it does not inherit a
+single selected chunk's section label. The processed corpus and chunk IDs are unchanged.
+
+For example, resolve the cash tax payment row's chunk with its page context:
+
+```powershell
+uv run python -m src.evidence data/processed/aapl-2024-10k.json d1548dced249295422ae1b9817c9a680099395017a43a83b7be256719df6f9d1 --context page --output data/processed/cash-tax-evidence.json
+```
+
+This returns 2,195 characters from PDF page 36, preserving the year columns, units,
+parenthesized negatives and the final cash-tax row. On the eight existing diagnostics,
+all required fragments are present for **8/8 after page expansion**, compared with
+**7/8 in a single chunk**. This is an oracle-seeded context check: the evaluator
+already knows the target row's chunk. It is not retrieval or financial accuracy.
+
+Context has a separate 8,000-character default budget (`--max-chars`). An over-budget
+request fails explicitly instead of silently removing text; callers must make an
+explicit budget or selection decision. Counts measure characters, not model tokens.
+Unknown IDs, duplicate corpus IDs, altered citations and mismatched metadata fail.
+Checks establish consistency against persisted raw extraction, not PDF authenticity.
+
+This is **not table extraction or automatic multi-page continuation detection**.
+PDF page 39 contains the 2024 investment table; page 40 begins a separate 2023 table
+and has footnotes applying to both years. Selecting page 40 never automatically
+adds page 39 or labels its rows with 2024. Multi-page evidence requires explicit
+chunk selections from each relevant page. Headers, units and footnotes on other
+pages may still be needed; page expansion does not establish evidence sufficiency.
+
+## Draft benchmark and human review
+
+`data/benchmark/aapl-2024-10k.v1.json` contains a **version 0.1.0 draft of 25 questions**:
+20 answerable items and 5 unsupported/abstention items, spanning factual, numerical,
+comparative, table, temporal, section-specific and combined-fact questions, plus
+false premises with counterevidence. Answers, atomic expected claims, notes and
+verbatim evidence anchors are included. Derived answers record their arithmetic
+in notes; a calculation engine is not implemented.
+
+All items are **pending human review**. The eight original chunk diagnostics remain
+a separate development set. Neither set is held out, and their overlap prevents
+treating results as an unbiased generalization measure. Many draft items use the
+same financial statements; breadth and alternative supporting passages need review.
+
+Generate a resolved JSON artifact and a readable review packet:
+
+```powershell
+uv run python -m src.benchmark data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --output data/processed/benchmark-bound.json --review data/processed/benchmark-review.md
+```
+
+The binder verifies the source digest, finds unique quote anchors, checks quote
+coverage by chunks, and records PDF/printed pages, raw offsets, section labels and
+supporting chunk IDs. Rebinding after rechunking updates IDs instead of keeping
+stale labels. Canonical model hashes for the benchmark and corpus identify the
+exact inputs independently of JSON formatting. The packet includes the expected
+answer, claims, excerpts, IDs and review notes for every question.
+
+These chunk IDs are **mechanical mappings of selected evidence, not exhaustive
+relevance judgments**. Other passages may answer the same question. In particular,
+the two combined-fact examples have valid same-page alternatives. A future retrieval
+evaluation must adjudicate alternatives rather than penalize a valid different citation.
+Unsupported questions have no supporting IDs; lack of quote anchors does not prove
+the question is unanswerable.
+
+Human reviewers should check the original PDF, values, units, fiscal years, claims,
+alternative evidence and abstention labels. Record `review_status: "human_reviewed"`,
+`reviewer`, and `reviewed_on` (YYYY-MM-DD) in the source question item. Only mark the
+overall status `human_reviewed` after all items are reviewed; update the review-method
+description and version as appropriate, then regenerate artifacts. The tool requires
+attribution and dates but cannot authenticate who performed the review. It never
+marks generated questions reviewed automatically. Current output explicitly reports
+`ready_for_scored_evaluation: false`.
+
+Next: complete source review and alternate-evidence labels, check additional
+cross-page table cases, then build the dense retrieval baseline with Recall@k and
+MRR. Keep corpus/chunk retrieval scores separate from expanded-context coverage.

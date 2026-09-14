@@ -7,6 +7,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from src.ingestion.pipeline import ProcessedFiling
+from src.evidence import resolve_evidence, validate_document
 
 
 class EvidenceCase(BaseModel):
@@ -30,21 +31,8 @@ def evaluate(document: ProcessedFiling, cases: EvidenceCases) -> dict:
         raise ValueError("Evaluation cases refer to a different source PDF")
     if len({c.case_id for c in cases.cases}) != len(cases.cases):
         raise ValueError("Duplicate evaluation case IDs")
+    validate_document(document)
     pages = {p.page: p for p in document.pages}
-    if len(pages) != len(document.pages):
-        raise ValueError("Duplicate PDF page numbers")
-    # A damaged persisted artifact must not produce a plausible quality score.
-    for page in document.pages:
-        end = page.raw_start + len(page.text)
-        if (page.page < 1 or not 0 <= page.raw_start <= end <= len(page.raw_text)
-                or page.raw_text[page.raw_start:end] != page.text):
-            raise ValueError(f"Invalid cleaned text citation for page {page.page}")
-    for chunk in document.chunks:
-        page = pages.get(chunk.page)
-        if (page is None or not 0 <= chunk.raw_start < chunk.raw_end <= len(page.raw_text)
-                or page.raw_text[chunk.raw_start:chunk.raw_end] != chunk.text
-                or chunk.source_sha256 != document.source_sha256):
-            raise ValueError(f"Invalid raw citation for chunk {chunk.chunk_id}")
     results = []
     for case in cases.cases:
         if case.page not in pages:
@@ -52,9 +40,9 @@ def evaluate(document: ProcessedFiling, cases: EvidenceCases) -> dict:
         raw = pages[case.page].raw_text
         locations = []
         for quote in case.evidence:
-            if not quote or raw.count(quote) != 1:
+            start = raw.find(quote)
+            if not quote or start < 0 or raw.find(quote, start + 1) >= 0:
                 raise ValueError(f"Evidence must occur exactly once on its page: {case.case_id}")
-            start = raw.index(quote)
             locations.append((start, start + len(quote)))
         if locations != sorted(locations) or any(a[1] > b[0] for a, b in zip(locations, locations[1:])):
             raise ValueError(f"Evidence fragments must be ordered and disjoint: {case.case_id}")
@@ -64,6 +52,20 @@ def evaluate(document: ProcessedFiling, cases: EvidenceCases) -> dict:
         complete = [c.chunk_id for c in relevant if c.raw_start <= start and c.raw_end >= end]
         # Page completeness is a diagnostic upper bound, not a retrieval score.
         cleaned = pages[case.page].text
+        # Seed with the chunk containing the final (target) fragment, then use
+        # the actual resolver. Do not relabel page availability as chunk quality.
+        target_start, target_end = locations[-1]
+        seeds = [c for c in relevant if c.raw_start <= target_start and c.raw_end >= target_end]
+        expanded_complete = False
+        context_chars = 0
+        expansion_error = None
+        if seeds:
+            try:
+                bundle = resolve_evidence(document, [seeds[0].chunk_id], context="page")
+                expanded_complete = all(q in bundle["spans"][0]["text"] for q in case.evidence)
+                context_chars = bundle["context_chars"]
+            except ValueError as error:
+                expansion_error = str(error)
         results.append({
             "case_id": case.case_id, "description": case.description,
             "page": case.page, "printed_page": pages[case.page].printed_page,
@@ -72,6 +74,9 @@ def evaluate(document: ProcessedFiling, cases: EvidenceCases) -> dict:
             "overlapping_chunk_ids": [c.chunk_id for c in relevant],
             "page_context_complete": all(q in cleaned for q in case.evidence),
             "section_correct": bool(relevant) and all(c.section == case.section for c in relevant),
+            "page_expanded_complete": expanded_complete,
+            "expansion_seed_chunk_id": seeds[0].chunk_id if seeds else None,
+            "expanded_context_chars": context_chars, "expansion_error": expansion_error,
         })
     return {
         "source_sha256": document.source_sha256, "extractor": document.extractor,
@@ -81,6 +86,8 @@ def evaluate(document: ProcessedFiling, cases: EvidenceCases) -> dict:
         "single_chunk_complete": sum(r["single_chunk_complete"] for r in results),
         "page_context_complete": sum(r["page_context_complete"] for r in results),
         "section_correct": sum(r["section_correct"] for r in results),
+        "context_policy": "page-v1", "context_max_chars": 8000,
+        "page_expanded_complete": sum(r["page_expanded_complete"] for r in results),
         "results": results,
     }
 

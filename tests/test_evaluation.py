@@ -94,3 +94,12 @@ def test_valid_empty_page_is_allowed(documents):
     whole, _, cases = documents
     whole.pages.append(PageText(page=2, raw_text=" \n", text="", raw_start=2))
     assert evaluate(whole, cases)["single_chunk_complete"] == 1
+
+
+def test_overlapping_quote_occurrences_are_ambiguous(documents, monkeypatch):
+    whole, _, cases = documents
+    monkeypatch.setattr(pipeline, "extract_pages", lambda _: [{"page": 1, "text": "aaa"}])
+    document = ingest(whole.source_path, whole.metadata)
+    cases.cases[0].evidence = ["aa"]
+    with pytest.raises(ValueError, match="exactly once"):
+        evaluate(document, cases)
