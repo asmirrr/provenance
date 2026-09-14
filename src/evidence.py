@@ -8,6 +8,16 @@ from pathlib import Path
 from src.ingestion.pipeline import ProcessedFiling
 
 
+def verify_source_pdf(document: ProcessedFiling, source_pdf: str | Path) -> dict:
+    """Verify PDF byte identity only; this does not re-extract or authenticate text."""
+    path = Path(source_pdf)
+    with path.open("rb") as stream:
+        digest = hashlib.file_digest(stream, "sha256").hexdigest()
+    if digest != document.source_sha256:
+        raise ValueError("Source PDF SHA-256 mismatch; citations belong to different PDF bytes")
+    return {"status": "matched", "path": path.resolve().as_posix(), "sha256": digest}
+
+
 def validate_document(document: ProcessedFiling) -> None:
     """Check internal citation consistency, not authenticity of the source PDF."""
     pages = {p.page: p for p in document.pages}
@@ -98,11 +108,17 @@ def main():
     parser.add_argument("--context", choices=["chunk", "page"], default="chunk")
     parser.add_argument("--max-chars", type=int, default=8000)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--source-pdf", type=Path, help="Verify the original PDF's SHA-256 before export")
     args = parser.parse_args()
-    if args.output and args.output.resolve() == args.document.resolve():
-        parser.error("Output must not overwrite the processed document")
+    inputs = {args.document.resolve()}
+    if args.source_pdf:
+        inputs.add(args.source_pdf.resolve())
+    if args.output and args.output.resolve() in inputs:
+        parser.error("Output must not overwrite an input")
     document = ProcessedFiling.model_validate_json(args.document.read_text(encoding="utf-8"))
+    verification = verify_source_pdf(document, args.source_pdf) if args.source_pdf else {"status": "not_checked"}
     result = resolve_evidence(document, args.chunk_ids, context=args.context, max_chars=args.max_chars)
+    result["source_pdf_verification"] = verification
     output = json.dumps(result, ensure_ascii=False, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

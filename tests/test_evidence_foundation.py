@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from src.benchmark import Benchmark, bind_benchmark, review_markdown
-from src.evidence import resolve_evidence, validate_document
+from src.benchmark import Benchmark, EvidenceAnchor, bind_benchmark, complete_evidence_groups, review_markdown
+from src.evidence import resolve_evidence, validate_document, verify_source_pdf
 from src.ingestion import pipeline
 from src.ingestion.pipeline import FilingMetadata, ProcessedFiling, ingest
 
@@ -18,7 +18,7 @@ def filing(tmp_path, monkeypatch):
     pdf.write_bytes(b"Unit test only: mocked PDF extraction")
     raw = [
         {"page": 1, "text": "Header 2024 (millions)\n" + "Filler words.\n" * 22 + "Net cash (42)"},
-        {"page": 2, "text": "Separate table 2023\nTotal sales 99"},
+        {"page": 2, "text": "Separate disclosure 2024\nNet cash (42)"},
     ]
     monkeypatch.setattr(pipeline, "extract_pages", lambda _: raw)
     metadata = FilingMetadata(company="Example", ticker="TEST", fiscal_year=2024,
@@ -78,6 +78,49 @@ def test_context_budget_is_exact_and_does_not_truncate(filing):
     assert resolve_evidence(filing, [cid], context="page", max_chars=size)["context_chars"] == size
     with pytest.raises(ValueError, match="Nothing was truncated"):
         resolve_evidence(filing, [cid], context="page", max_chars=size - 1)
+
+
+def test_source_verification_accepts_identical_copy(filing, tmp_path):
+    copied = tmp_path / "renamed.pdf"
+    copied.write_bytes(Path(filing.source_path).read_bytes())
+    result = verify_source_pdf(filing, copied)
+    assert result == {"status": "matched", "path": copied.resolve().as_posix(),
+                      "sha256": filing.source_sha256}
+
+
+def test_source_verification_rejects_replaced_pdf(filing):
+    Path(filing.source_path).write_bytes(b"different document")
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        verify_source_pdf(filing, filing.source_path)
+
+
+def test_source_verification_requires_existing_file(filing, tmp_path):
+    with pytest.raises(FileNotFoundError):
+        verify_source_pdf(filing, tmp_path / "missing.pdf")
+
+
+@pytest.mark.parametrize("command", ["evidence", "benchmark"])
+def test_cli_source_mismatch_preserves_existing_outputs(filing, benchmark, tmp_path, monkeypatch, command):
+    from src import evidence as evidence_cli, benchmark as benchmark_cli
+    document = tmp_path / "document.json"
+    document.write_text(filing.model_dump_json(), encoding="utf-8")
+    cases = tmp_path / "cases.json"
+    cases.write_text(benchmark.model_dump_json(), encoding="utf-8")
+    output, review = tmp_path / "output.json", tmp_path / "review.md"
+    output.write_text("existing output", encoding="utf-8")
+    review.write_text("existing review", encoding="utf-8")
+    Path(filing.source_path).write_bytes(b"replaced source")
+    args = [command, str(document)]
+    if command == "benchmark":
+        args += [str(cases), "--review", str(review)]
+    else:
+        args += [filing.chunks[0].chunk_id]
+    args += ["--output", str(output), "--source-pdf", filing.source_path]
+    monkeypatch.setattr("sys.argv", args)
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        (benchmark_cli.main if command == "benchmark" else evidence_cli.main)()
+    assert output.read_text(encoding="utf-8") == "existing output"
+    assert review.read_text(encoding="utf-8") == "existing review"
 
 
 @pytest.mark.parametrize("ids,options", [([], {}), (["unknown"], {}),
@@ -190,6 +233,67 @@ def test_benchmark_label_validation(benchmark, corruption):
         Benchmark.model_validate(payload)
 
 
+def test_alternatives_bind_independently_and_are_shown_in_review(filing, benchmark):
+    benchmark.items[0].alternative_evidence = [[EvidenceAnchor(page=2, quote=filing.pages[1].text)]]
+    result = bind_benchmark(filing, benchmark)
+    item = result["items"][0]
+    primary, alternative = item["evidence_groups"]
+    assert result["items_with_alternatives"] == 1
+    assert primary["supporting_pages"] == [1] and alternative["supporting_pages"] == [2]
+    assert item["supporting_chunk_ids"] == primary["supporting_chunk_ids"]
+    assert complete_evidence_groups(item, alternative["supporting_chunk_ids"]) == ["alternative-1"]
+    assert complete_evidence_groups(item, primary["supporting_chunk_ids"]) == ["primary"]
+    assert complete_evidence_groups(result["items"][1], alternative["supporting_chunk_ids"]) == []
+    assert "Evidence group: alternative-1" in review_markdown(result)
+    assert not result["ready_for_scored_evaluation"]
+
+
+def test_partial_groups_cannot_be_mixed_into_complete_support():
+    item = {"evidence_groups": [
+        {"group_id": "primary", "supporting_chunk_ids": ["a", "b"]},
+        {"group_id": "alternative-1", "supporting_chunk_ids": ["c", "d"]},
+    ]}
+    assert complete_evidence_groups(item, ["a", "c", "unknown"]) == []
+    assert complete_evidence_groups(item, ["a", "a", "b"]) == ["primary"]
+
+
+def test_review_progress_counts_and_prioritizes_pending_unsupported_items(filing, benchmark):
+    report = bind_benchmark(filing, benchmark)
+    progress = report["review_progress"]
+    assert progress["pending_item_ids"] == ["test-2", "test-1"]
+    assert progress["by_category"]["table"] == {"total": 1, "reviewed": 0, "pending": 1, "unsupported": 0}
+    assert progress["by_category"]["unsupported"]["unsupported"] == 1
+    assert "| table | 1 | 0 | 1 | 0 |" in review_markdown(report)
+
+
+def test_review_progress_removes_reviewed_items_without_auto_finalizing(filing, benchmark):
+    from datetime import date
+    for item in benchmark.items:
+        item.review_status = "human_reviewed"
+        item.reviewer = "Synthetic unit-test reviewer"
+        item.reviewed_on = date(2024, 11, 2)
+    report = bind_benchmark(filing, benchmark)
+    assert report["review_progress"]["pending_item_ids"] == []
+    assert sum(c["reviewed"] for c in report["review_progress"]["by_category"].values()) == 2
+    assert not report["ready_for_scored_evaluation"]
+    assert "No pending items" in review_markdown(report)
+
+
+@pytest.mark.parametrize("corruption", ["empty", "duplicate", "unsupported", "invalid_anchor"])
+def test_invalid_alternatives_are_not_ignored(filing, benchmark, corruption):
+    payload = benchmark.model_dump(mode="json")
+    if corruption == "empty":
+        payload["items"][0]["alternative_evidence"] = [[]]
+    elif corruption == "duplicate":
+        payload["items"][0]["alternative_evidence"] = [payload["items"][0]["evidence"]]
+    elif corruption == "unsupported":
+        payload["items"][1]["alternative_evidence"] = [payload["items"][0]["evidence"]]
+    else:
+        payload["items"][0]["alternative_evidence"] = [[{"page": 2, "quote": "not in source"}]]
+    with pytest.raises(ValueError):
+        bind_benchmark(filing, Benchmark.model_validate(payload))
+
+
 def test_real_benchmark_and_cash_flow_context():
     root = Path(__file__).resolve().parents[1]
     path = root / "data/processed/aapl-2024-10k.json"
@@ -200,6 +304,16 @@ def test_real_benchmark_and_cash_flow_context():
     bound = bind_benchmark(document, benchmark)
     assert bound["item_count"] == 25 and bound["answerable_count"] == 20
     assert bound["pending_review_count"] == 25 and not bound["ready_for_scored_evaluation"]
+    assert bound["version"] == "0.2.0" and bound["items_with_alternatives"] == 8
+    cash_comparison = next(item for item in bound["items"] if item["id"] == "aapl24-018")
+    assert cash_comparison["category"] == "comparative"
+    assert cash_comparison["evidence_groups"][0]["supporting_pages"] == [36]
+    ratio = next(item for item in bound["items"] if item["id"] == "aapl24-019")
+    assert ratio["category"] == "numerical"
+    assert [g["supporting_pages"] for g in ratio["evidence_groups"]] == [[32], [26], [26, 32]]
+    for item in bound["items"]:
+        for group in item["evidence_groups"]:
+            assert group["group_id"] in complete_evidence_groups(item, group["supporting_chunk_ids"])
     assert all(not item["page_context_error"] for item in bound["items"])
     tax = next(c for c in document.chunks if c.page == 36 and "Cash paid for income taxes, net" in c.text)
     bundle = resolve_evidence(document, [tax.chunk_id], context="page")

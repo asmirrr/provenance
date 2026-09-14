@@ -1,8 +1,8 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft_pending_human_review",
   "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
-  "review_method": "Agent-drafted from the actual persisted Apple 2024 10-K raw extraction. All quote anchors checked for exact unique occurrence on their stated PDF pages. No human annotation or review has occurred. This draft is not a held-out or validated benchmark; unsupported cases require human scope/absence review.",
+  "review_method": "Agent-drafted from the actual persisted Apple 2024 10-K raw extraction. All quote anchors checked for exact unique occurrence on their stated PDF pages. No human annotation or review has occurred. This draft is not a held-out or validated benchmark; unsupported cases require human scope/absence review. Version 0.2.0 adds source-checked alternative evidence groups for eight questions and corrects two overstated multi-hop labels; human review remains pending.",
   "items": [
     {
       "id": "aapl24-001",
@@ -15,7 +15,7 @@
       ],
       "difficulty": "easy",
       "review_status": "pending",
-      "notes": "Direct filing evidence; pending human review.",
+      "notes": "Direct filing evidence; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 32,
@@ -25,6 +25,28 @@
           "page": 32,
           "quote": "Total net sales 391,035 383,285 394,328"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 26,
+            "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022"
+          },
+          {
+            "page": 26,
+            "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328"
+          }
+        ],
+        [
+          {
+            "page": 25,
+            "quote": "The following table shows net sales by reportable segment for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022"
+          },
+          {
+            "page": 25,
+            "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328"
+          }
+        ]
       ]
     },
     {
@@ -38,7 +60,7 @@
       ],
       "difficulty": "easy",
       "review_status": "pending",
-      "notes": "Direct filing evidence; pending human review.",
+      "notes": "Direct filing evidence; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 32,
@@ -48,6 +70,28 @@
           "page": 32,
           "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 36,
+            "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
+          },
+          {
+            "page": 36,
+            "quote": "Net income 93,736 96,995 99,803"
+          }
+        ],
+        [
+          {
+            "page": 39,
+            "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022"
+          },
+          {
+            "page": 39,
+            "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
+          }
+        ]
       ]
     },
     {
@@ -61,7 +105,7 @@
       ],
       "difficulty": "easy",
       "review_status": "pending",
-      "notes": "Direct filing evidence; pending human review.",
+      "notes": "Direct filing evidence; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 32,
@@ -71,6 +115,18 @@
           "page": 32,
           "quote": "Diluted $ 6.08 $ 6.13 $ 6.11"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 39,
+            "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022"
+          },
+          {
+            "page": 39,
+            "quote": "Diluted earnings per share $ 6.08 $ 6.13 $ 6.11"
+          }
+        ]
       ]
     },
     {
@@ -86,7 +142,7 @@
       ],
       "difficulty": "medium",
       "review_status": "pending",
-      "notes": "Derived subtraction: 96,995 - 93,736 = 3,259, in millions; pending human review.",
+      "notes": "Derived subtraction: 96,995 - 93,736 = 3,259, in millions; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 32,
@@ -96,6 +152,28 @@
           "page": 32,
           "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 36,
+            "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
+          },
+          {
+            "page": 36,
+            "quote": "Net income 93,736 96,995 99,803"
+          }
+        ],
+        [
+          {
+            "page": 39,
+            "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022"
+          },
+          {
+            "page": 39,
+            "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
+          }
+        ]
       ]
     },
     {
@@ -109,7 +187,7 @@
       ],
       "difficulty": "easy",
       "review_status": "pending",
-      "notes": "Direct filing evidence; pending human review.",
+      "notes": "Direct filing evidence; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 32,
@@ -119,6 +197,18 @@
           "page": 32,
           "quote": "Research and development 31,370 29,915 26,251"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 27,
+            "quote": "Operating expenses for 2024, 2023 and 2022 were as follows (dollars in millions):\n2024 Change 2023 Change 2022"
+          },
+          {
+            "page": 27,
+            "quote": "Research and development $ 31,370 5 % $ 29,915 14 % $ 26,251"
+          }
+        ]
       ]
     },
     {
@@ -371,18 +461,26 @@
       ],
       "difficulty": "easy",
       "review_status": "pending",
-      "notes": "Direct filing evidence; pending human review.",
+      "notes": "Direct filing evidence; pending human review. Additional agent-checked source groups are included; they are not exhaustive relevance judgments.",
       "evidence": [
         {
           "page": 49,
           "quote": "includes European countries, as well as India, the Middle East and Africa. Greater China includes China mainland, Hong Kong\nand Taiwan."
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 5,
+            "quote": "includes European countries, as well as India, the Middle East and Africa. Greater China includes China mainland, Hong Kong\nand Taiwan."
+          }
+        ]
       ]
     },
     {
       "id": "aapl24-018",
       "question": "Was Apple's fiscal 2024 operating cash flow greater than net income, and by how much?",
-      "category": "multi_hop",
+      "category": "comparative",
       "answerable": true,
       "expected_answer": "Yes. Operating cash flow was $118,254 million versus net income of $93,736 million, a difference of $24,518 million.",
       "expected_claims": [
@@ -390,32 +488,48 @@
         "Fiscal 2024 net income was $93,736 million.",
         "Operating cash flow exceeded net income by $24,518 million."
       ],
-      "difficulty": "hard",
+      "difficulty": "medium",
       "review_status": "pending",
-      "notes": "Cross-statement comparison: 118,254 - 93,736 = 24,518, in millions. A same-page net-income row also exists in the cash-flow statement; these anchors deliberately connect two statements. Pending human review.",
+      "notes": "Agent source review: both operands appear on PDF page 36; this is a numerical comparison, not inherently multi-hop. 118,254 - 93,736 = 24,518 million. The original cross-statement group remains a valid alternative. Pending human review.",
       "evidence": [
-        {
-          "page": 32,
-          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
-        },
-        {
-          "page": 32,
-          "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
-        },
         {
           "page": 36,
           "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
         },
         {
           "page": 36,
+          "quote": "Net income 93,736 96,995 99,803"
+        },
+        {
+          "page": 36,
           "quote": "Cash generated by operating activities 118,254 110,543 122,151"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 32,
+            "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
+          },
+          {
+            "page": 32,
+            "quote": "Net income $ 93,736 $ 96,995 $ 99,803"
+          },
+          {
+            "page": 36,
+            "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
+          },
+          {
+            "page": 36,
+            "quote": "Cash generated by operating activities 118,254 110,543 122,151"
+          }
+        ]
       ]
     },
     {
       "id": "aapl24-019",
       "question": "What percentage of Apple's fiscal 2024 total net sales came from Services, rounded to one decimal place?",
-      "category": "multi_hop",
+      "category": "numerical",
       "answerable": true,
       "expected_answer": "Approximately 24.6%, using Services net sales of $96,169 million and total net sales of $391,035 million.",
       "expected_claims": [
@@ -423,26 +537,56 @@
         "Fiscal 2024 total net sales were $391,035 million.",
         "Services represented approximately 24.6% of total net sales."
       ],
-      "difficulty": "hard",
+      "difficulty": "medium",
       "review_status": "pending",
-      "notes": "Derived ratio: 96,169 / 391,035 * 100, rounded to one decimal = 24.6%. Both inputs also appear together in each statement; category denotes combining facts rather than requiring cross-page retrieval. Pending human review.",
+      "notes": "Agent source review: both operands occur together on pages 26 and 32; this is a ratio calculation, not inherently multi-hop. 96,169 / 391,035 * 100 rounds to 24.6%. Two same-page groups and the original cross-page group are recorded. Pending human review.",
       "evidence": [
-        {
-          "page": 26,
-          "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022"
-        },
-        {
-          "page": 26,
-          "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129"
-        },
         {
           "page": 32,
           "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
         },
         {
           "page": 32,
+          "quote": "Services 96,169 85,200 78,129"
+        },
+        {
+          "page": 32,
           "quote": "Total net sales 391,035 383,285 394,328"
         }
+      ],
+      "alternative_evidence": [
+        [
+          {
+            "page": 26,
+            "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022"
+          },
+          {
+            "page": 26,
+            "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129"
+          },
+          {
+            "page": 26,
+            "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328"
+          }
+        ],
+        [
+          {
+            "page": 26,
+            "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022"
+          },
+          {
+            "page": 26,
+            "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129"
+          },
+          {
+            "page": 32,
+            "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022"
+          },
+          {
+            "page": 32,
+            "quote": "Total net sales 391,035 383,285 394,328"
+          }
+        ]
       ]
     },
     {

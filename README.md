@@ -150,6 +150,14 @@ explicit budget or selection decision. Counts measure characters, not model toke
 Unknown IDs, duplicate corpus IDs, altered citations and mismatched metadata fail.
 Checks establish consistency against persisted raw extraction, not PDF authenticity.
 
+Both `src.evidence` and `src.benchmark` accept `--source-pdf data/raw/aapl-2024-10k.pdf`.
+This hashes the supplied file and requires it to match the digest recorded during
+ingestion **before writing outputs**. Missing or replaced files fail explicitly;
+a renamed byte-identical copy passes. Exported JSON records `source_pdf_verification`
+as `matched` with the checked path/digest, or `not_checked` when the option is omitted.
+This verifies PDF byte identity, not whether stored extracted text is faithful to
+those bytes; re-extraction is still needed to establish that independently.
+
 This is **not table extraction or automatic multi-page continuation detection**.
 PDF page 39 contains the 2024 investment table; page 40 begins a separate 2023 table
 and has footnotes applying to both years. Selecting page 40 never automatically
@@ -159,7 +167,7 @@ pages may still be needed; page expansion does not establish evidence sufficienc
 
 ## Draft benchmark and human review
 
-`data/benchmark/aapl-2024-10k.v1.json` contains a **version 0.1.0 draft of 25 questions**:
+`data/benchmark/aapl-2024-10k.v1.json` contains a **version 0.2.0 draft of 25 questions**:
 20 answerable items and 5 unsupported/abstention items, spanning factual, numerical,
 comparative, table, temporal, section-specific and combined-fact questions, plus
 false premises with counterevidence. Answers, atomic expected claims, notes and
@@ -185,11 +193,29 @@ exact inputs independently of JSON formatting. The packet includes the expected
 answer, claims, excerpts, IDs and review notes for every question.
 
 These chunk IDs are **mechanical mappings of selected evidence, not exhaustive
-relevance judgments**. Other passages may answer the same question. In particular,
-the two combined-fact examples have valid same-page alternatives. A future retrieval
-evaluation must adjudicate alternatives rather than penalize a valid different citation.
+relevance judgments**. Other passages may answer the same question. Version 0.2.0
+records alternative groups for eight questions. It also corrects the two original
+multi-hop labels: the operating-cash-flow comparison is `comparative`, and the
+Services share calculation is `numerical`, both medium difficulty. Both operands
+can be found on one page; combining numbers does not itself require multi-hop retrieval.
 Unsupported questions have no supporting IDs; lack of quote anchors does not prove
 the question is unanswerable.
+
+In the source JSON, `evidence` is the primary group and `alternative_evidence` is a
+list of additional groups. All excerpts **within** a group are jointly required;
+any **complete** group is an acceptable candidate support set. Units and year labels
+stay with the relevant values. The binder validates and budgets each group separately
+and exports them as `evidence_groups`; it never turns all alternative chunks into
+one mandatory union. Top-level `supporting_chunk_ids` and `evidence` still describe
+only the primary group for compatibility. New consumers should use `evidence_groups`.
+
+`complete_evidence_groups(item, selected_chunk_ids)` checks raw-chunk coverage of a
+bound item's groups. It never mixes incomplete groups, and unsupported questions
+return no completed groups. This helper is a diagnostic, not a retrieval/answer score:
+it does not infer correctness or credit page expansion as if more chunks were retrieved.
+The review packet displays primary and alternative groups separately. All alternatives
+were checked by the coding agent against the extraction and still require human review;
+they are not an exhaustive list of relevant passages.
 
 Human reviewers should check the original PDF, values, units, fiscal years, claims,
 alternative evidence and abstention labels. Record `review_status: "human_reviewed"`,
@@ -199,6 +225,13 @@ description and version as appropriate, then regenerate artifacts. The tool requ
 attribution and dates but cannot authenticate who performed the review. It never
 marks generated questions reviewed automatically. Current output explicitly reports
 `ready_for_scored_evaluation: false`.
+
+The generated packet starts with counts by category (reviewed, pending and
+unsupported) and a pending-item queue. Unsupported questions appear first because
+their absence/scope labels need explicit review; source order is preserved within
+each group. Regenerating the packet removes reviewed questions from the queue but
+does not automatically finalize the benchmark. The same summary is stored under
+`review_progress` in the bound JSON.
 
 Next: complete source review and alternate-evidence labels, check additional
 cross-page table cases, then build the dense retrieval baseline with Recall@k and
