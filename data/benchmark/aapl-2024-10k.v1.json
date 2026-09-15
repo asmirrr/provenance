@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "status": "draft_pending_human_review",
   "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
   "review_method": "Agent-drafted from the actual persisted Apple 2024 10-K raw extraction. All quote anchors checked for exact unique occurrence on their stated PDF pages. No human annotation or review has occurred. This draft is not a held-out or validated benchmark; unsupported cases require human scope/absence review. Version 0.2.0 adds source-checked alternative evidence groups for eight questions and corrects two overstated multi-hop labels; human review remains pending.",
@@ -668,6 +668,103 @@
       "review_status": "pending",
       "notes": "Future investment returns cannot be established by a historical filing and depend on unspecified dates and prices. Scope-based unanswerability assumption pending human review; absence is not proven by text search alone.",
       "evidence": []
+    },
+    {
+      "id": "aapl24-026",
+      "question": "In Note 4, what was the fair value of corporate debt securities at September 28, 2024 and September 30, 2023, and how much did it change?",
+      "category": "comparative",
+      "answerable": true,
+      "expected_answer": "$63,939 million in 2024 versus $70,890 million in 2023, a decrease of $6,951 million.",
+      "expected_claims": [
+        "Corporate debt securities had fair value of $63,939 million at September 28, 2024.",
+        "Corporate debt securities had fair value of $70,890 million at September 30, 2023.",
+        "Fair value decreased by $6,951 million."
+      ],
+      "difficulty": "hard",
+      "review_status": "pending",
+      "notes": "Agent-checked against PDF pages 39-40 (printed 36-37); pending human review. Fair Value is the fourth numeric column, not adjusted cost. Arithmetic: 63,939 - 70,890 = -6,951 million. The two tables have different year headers; units and dates are introduced on page 39. These are selected support passages, not exhaustive relevance labels.",
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):"
+        },
+        {
+          "page": 39,
+          "quote": "\n2024\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities"
+        },
+        {
+          "page": 39,
+          "quote": "Corporate debt securities 65,622 270 (1,953) 63,939 26 16,027 47,886"
+        },
+        {
+          "page": 40,
+          "quote": "2023\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities"
+        },
+        {
+          "page": 40,
+          "quote": "Corporate debt securities 76,840 6 (5,956) 70,890 20 12,627 58,243"
+        }
+      ]
+    },
+    {
+      "id": "aapl24-027",
+      "question": "In Note 4, what cash and cash equivalents total is reported for September 28, 2024, and how much of it was held in escrow and restricted from general use?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "The Note 4 total is $29,943 million, including $2.6 billion held in escrow and restricted from general use to settle the State Aid Decision obligation.",
+      "expected_claims": [
+        "Note 4 reports $29,943 million of cash and cash equivalents at September 28, 2024.",
+        "$2.6 billion of that amount was held in escrow and restricted from general use.",
+        "The restricted cash and cash equivalents were designated to settle the State Aid Decision obligation."
+      ],
+      "difficulty": "hard",
+      "review_status": "pending",
+      "notes": "Agent-checked against PDF pages 39-40 (printed 36-37); pending human review. Follow marker (2) from the 2024 total to the following page. Footnote (2) explicitly refers to 2024 even though it appears below the 2023 table. Preserve million versus billion units; do not substitute the balance-sheet cash figure or describe all of this total as unrestricted. Alternative evidence remains subject to review.",
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):"
+        },
+        {
+          "page": 39,
+          "quote": "\n2024\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities"
+        },
+        {
+          "page": 39,
+          "quote": "Total (2)(3) $ 160,600 $ 688 $ (4,638) $ 156,650 $ 29,943 $ 35,228 $ 91,479"
+        },
+        {
+          "page": 40,
+          "quote": "(2) As of September 28, 2024, cash and cash equivalents included $2.6 billion held in escrow and restricted from general use.\nThese restricted cash and cash equivalents were designated to settle the Company’s obligation related to the State Aid\nDecision (refer to Note 7, “Income Taxes”)."
+        }
+      ]
+    },
+    {
+      "id": "aapl24-028",
+      "question": "According to Note 4, what were the unrealized losses on corporate debt securities at September 30, 2023?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$5,956 million of unrealized losses, shown as (5,956) in the 2023 table.",
+      "expected_claims": [
+        "Corporate debt securities had unrealized losses of $5,956 million at September 30, 2023."
+      ],
+      "difficulty": "hard",
+      "review_status": "pending",
+      "notes": "Agent-checked against PDF pages 39-40 (printed 36-37); pending human review. The 2023 row and header are on page 40; the table introduction specifying dates and millions is on page 39. Parentheses denote losses. Do not use the 2024 loss of (1,953), the adjusted cost, or fair value. Cross-page support is required for this selected group, not asserted for every possible passage in the filing.",
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):"
+        },
+        {
+          "page": 40,
+          "quote": "2023\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities"
+        },
+        {
+          "page": 40,
+          "quote": "Corporate debt securities 76,840 6 (5,956) 70,890 20 12,627 58,243"
+        }
+      ]
     }
   ]
 }

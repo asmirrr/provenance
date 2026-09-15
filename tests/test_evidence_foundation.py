@@ -302,9 +302,9 @@ def test_real_benchmark_and_cash_flow_context():
     document = ProcessedFiling.model_validate_json(path.read_text(encoding="utf-8"))
     benchmark = Benchmark.model_validate_json((root / "data/benchmark/aapl-2024-10k.v1.json").read_text(encoding="utf-8"))
     bound = bind_benchmark(document, benchmark)
-    assert bound["item_count"] == 25 and bound["answerable_count"] == 20
-    assert bound["pending_review_count"] == 25 and not bound["ready_for_scored_evaluation"]
-    assert bound["version"] == "0.2.0" and bound["items_with_alternatives"] == 8
+    assert bound["item_count"] == 28 and bound["answerable_count"] == 23
+    assert bound["pending_review_count"] == 28 and not bound["ready_for_scored_evaluation"]
+    assert bound["version"] == "0.3.0" and bound["items_with_alternatives"] == 8
     cash_comparison = next(item for item in bound["items"] if item["id"] == "aapl24-018")
     assert cash_comparison["category"] == "comparative"
     assert cash_comparison["evidence_groups"][0]["supporting_pages"] == [36]
@@ -329,3 +329,48 @@ def test_real_benchmark_and_cash_flow_context():
     pdf = root / "data/raw/aapl-2024-10k.pdf"
     if pdf.exists():
         assert hashlib.sha256(pdf.read_bytes()).hexdigest() == benchmark.source_sha256
+
+
+@pytest.mark.parametrize("chunking", ["line-v1", "sentence-v2"])
+def test_real_cross_page_tables_require_explicit_complete_evidence(chunking, monkeypatch):
+    root = Path(__file__).resolve().parents[1]
+    pdf = root / "data/raw/aapl-2024-10k.pdf"
+    if not pdf.exists():
+        pytest.skip("Download the documented filing to enable real table checks")
+    # Re-extract these two source pages rather than depending on a stored corpus.
+    import pdfplumber
+    with pdfplumber.open(pdf) as source:
+        raw = [{"page": n, "text": source.pages[n - 1].extract_text() or ""} for n in (39, 40)]
+    monkeypatch.setattr(pipeline, "extract_pages", lambda _: raw)
+    metadata = FilingMetadata.model_validate_json(
+        (root / "data/raw/aapl-2024-10k.metadata.json").read_text(encoding="utf-8"))
+    document = ingest(pdf, metadata, chunking=chunking)
+    benchmark = Benchmark.model_validate_json(
+        (root / "data/benchmark/aapl-2024-10k.v1.json").read_text(encoding="utf-8"))
+    benchmark.items = [i for i in benchmark.items if i.id in {"aapl24-026", "aapl24-027", "aapl24-028"}]
+    bound = bind_benchmark(document, benchmark)
+    assert len(bound["items"]) == 3
+    for item in bound["items"]:
+        assert item["supporting_pages"] == [39, 40]
+        ids = item["supporting_chunk_ids"]
+        assert complete_evidence_groups(item, ids) == ["primary"]
+        for page in (39, 40):
+            partial = [c.chunk_id for c in document.chunks if c.page == page]
+            assert complete_evidence_groups(item, partial) == []
+            bundle = resolve_evidence(document, partial, context="page")
+            assert [span["page"] for span in bundle["spans"]] == [page]
+        bundle = resolve_evidence(document, ids, context="page")
+        spans = {span["page"]: span["text"] for span in bundle["spans"]}
+        for anchor in item["evidence"]:
+            assert anchor["quote"] in spans[anchor["page"]]
+        size = bundle["context_chars"]
+        assert size == sum(len(p.text) for p in document.pages)
+        with pytest.raises(ValueError, match="Nothing was truncated"):
+            resolve_evidence(document, ids, context="page", max_chars=size - 1)
+    comparison, restriction, losses = bound["items"]
+    assert "63,939" in comparison["evidence"][2]["quote"]
+    assert "70,890" in comparison["evidence"][4]["quote"]
+    assert "(2) As of September 28, 2024" in restriction["evidence"][-1]["quote"]
+    assert "$2.6 billion" in restriction["evidence"][-1]["quote"]
+    assert losses["evidence"][1]["quote"].startswith("2023\n")
+    assert "(5,956)" in losses["evidence"][-1]["quote"]

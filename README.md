@@ -167,8 +167,8 @@ pages may still be needed; page expansion does not establish evidence sufficienc
 
 ## Draft benchmark and human review
 
-`data/benchmark/aapl-2024-10k.v1.json` contains a **version 0.2.0 draft of 25 questions**:
-20 answerable items and 5 unsupported/abstention items, spanning factual, numerical,
+`data/benchmark/aapl-2024-10k.v1.json` contains a **version 0.3.0 draft of 28 questions**:
+23 answerable items and 5 unsupported/abstention items, spanning factual, numerical,
 comparative, table, temporal, section-specific and combined-fact questions, plus
 false premises with counterevidence. Answers, atomic expected claims, notes and
 verbatim evidence anchors are included. Derived answers record their arithmetic
@@ -233,6 +233,32 @@ each group. Regenerating the packet removes reviewed questions from the queue bu
 does not automatically finalize the benchmark. The same summary is stored under
 `review_progress` in the bound JSON.
 
-Next: complete source review and alternate-evidence labels, check additional
-cross-page table cases, then build the dense retrieval baseline with Recall@k and
-MRR. Keep corpus/chunk retrieval scores separate from expanded-context coverage.
+### Cross-page table cases
+
+Version 0.3.0 adds three source-checked draft items on PDF pages 39–40 (printed
+36–37), using the original table layout as well as extracted text:
+
+- `aapl24-026`: corporate-debt fair value in 2024 versus 2023. The year tables
+  are on separate pages; fair value must not be confused with adjusted cost.
+- `aapl24-027`: the 2024 Note 4 cash total and its restricted portion. Footnote
+  (2) is printed below the 2023 table but explicitly refers to September 28, 2024.
+  The total is in millions; the restricted portion is stated in billions.
+- `aapl24-028`: 2023 corporate-debt unrealized losses. Page 40 supplies the year,
+  column header and parenthesized value; page 39 supplies the dates and units.
+
+Each selected evidence group requires both pages. Tests re-extract these pages
+from the original PDF and bind all three items under both chunking strategies.
+They check incomplete single-page selections, explicit two-page expansion, exact
+quote preservation and rejection when the context budget is too small. These are
+source-backed regression checks, not measured retrieval accuracy or exhaustive
+relevance judgments. All three items remain pending human review.
+
+No automatic table stitching is needed for these cases: explicit page selection
+preserves the evidence without assigning one table's year to the next. Extraction
+still lacks column geometry, and the resolver does not establish that a selected
+context is sufficient to answer an arbitrary question.
+
+Next: human-review the source answers and alternate-evidence labels, then build
+the dense retrieval baseline with Recall@k and MRR. Keep corpus/chunk retrieval
+scores separate from expanded-context coverage. Do not describe draft-label
+experiments as results against human-reviewed ground truth.
