@@ -2,8 +2,8 @@
 
 Traceable financial intelligence, built from source evidence upward. The current
 milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
-chunks, with an offline evidence-context diagnostic set. Retrieval, LLMs, and claim
-verification are intentionally not implemented.
+chunks, with an offline evidence-context diagnostic set and a first dense retrieval
+baseline. LLM generation and claim verification are not implemented.
 
 ## Run locally (PowerShell)
 
@@ -258,7 +258,54 @@ preserves the evidence without assigning one table's year to the next. Extractio
 still lacks column geometry, and the resolver does not establish that a selected
 context is sufficient to answer an arbitrary question.
 
-Next: human-review the source answers and alternate-evidence labels, then build
+Next: human-review the source answers and alternate-evidence labels, then evaluate
 the dense retrieval baseline with Recall@k and MRR. Keep corpus/chunk retrieval
 scores separate from expanded-context coverage. Do not describe draft-label
 experiments as results against human-reviewed ground truth.
+
+## Dense retrieval baseline
+
+`src.dense` searches the ingested filing and returns ranked chunks with cosine
+scores and their complete citation metadata. It generates no answer and applies
+no abstention threshold: even an unsupported question receives candidate chunks.
+Similarity is not evidence sufficiency or a calibrated confidence score.
+
+The baseline uses the existing Sentence Transformers dependency and
+[all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2),
+pinned to revision `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`.
+It runs on CPU with one PyTorch thread and deterministic algorithms, using exact
+cosine ranking with chunk ID as the tie-breaker. Identical environments should
+reproduce scores; bitwise equality across hardware/library versions is not promised.
+The first run downloads public model weights; no API key or hosted inference is
+required. Queries and filing text are embedded locally.
+
+```powershell
+uv run python -m src.dense data/processed/aapl-2024-10k.json "What were Apple total net sales in fiscal 2024?" --top-k 5 --allow-truncation --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/dense-sales.json
+```
+
+After the model is cached, add `--local-files-only` to require offline loading.
+The corpus is embedded anew each run; there is no vector database or persisted
+embedding cache. This keeps corpus-to-vector identity simple for this small filing.
+Tests use explicitly synthetic vectors and never download a model.
+
+**Token-limit limitation:** this model accepts 256 tokens, including special
+tokens. In the current 314-chunk corpus, 206 chunks exceed that limit. By default
+the command rejects oversized chunks or queries before encoding. The explicit
+`--allow-truncation` flag runs a **prefix-only baseline**: suffixes of long chunks
+do not contribute to the embedding. Returned citation text remains complete and
+unaltered; this does not mean the encoder saw all of it. No chunking settings or
+benchmark labels are changed to make the model fit.
+
+Each JSON artifact records the question, source and canonical corpus hashes,
+model revision, package versions, token limit, affected chunk IDs, per-result
+truncation flags, ranks, scores, full chunks, and separate model-loading,
+tokenization, corpus-encoding, query-encoding and ranking times. Top-k is capped
+at the available chunk count. Optional source-PDF verification runs before loading
+the model; output paths cannot overwrite the provided inputs.
+
+The initial net-sales smoke query ranked PDF pages 26 and 32 first and second.
+This demonstrates an end-to-end search, not benchmark accuracy. The next retrieval
+experiment should compare this explicit prefix baseline with encoding that covers
+complete chunks, then add batch evaluation with clearly defined alternative-group
+metrics. All 28 benchmark items still require human review before results can be
+presented as evaluation against human-reviewed ground truth.
