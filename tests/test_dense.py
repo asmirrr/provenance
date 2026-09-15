@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.dense import cosine_ranking, search
+from src.dense import cosine_ranking, search, search_many, text_windows, mean_windows
 from src.ingestion import pipeline
 
 
@@ -114,3 +114,97 @@ def test_cli_rejects_wrong_pdf_without_changing_output(document, tmp_path, monke
     with pytest.raises(ValueError, match="SHA-256 mismatch"):
         main()
     assert output.read_text(encoding="utf-8") == "previous result"
+
+
+class WindowModel:
+    max_seq_length = 10
+
+    def __init__(self):
+        self.calls = []
+
+    def tokenizer(self, texts, **kwargs):
+        return {"input_ids": [[0] * (len(text) + 2) for text in texts]}
+
+    def encode(self, texts, **kwargs):
+        assert all(len(text) + 2 <= self.max_seq_length for text in texts)
+        self.calls.append(texts)
+
+        class Array:
+            def tolist(self):
+                return [[len(text), 1] for text in texts]
+        return Array()
+
+
+@pytest.mark.parametrize("text", ["abcdefgh", "a" * 50, "first sentence. second sentence!", "a\n b  c\t" * 8])
+def test_windows_cover_every_character_without_overflow(text):
+    model = WindowModel()
+    windows = text_windows(text, model.tokenizer, model.max_seq_length)
+    assert "".join(text[w["start"]:w["end"]] for w in windows) == text
+    assert all(w["tokens"] <= 10 for w in windows)
+    assert windows[0]["start"] == 0 and windows[-1]["end"] == len(text)
+    assert all(a["end"] == b["start"] for a, b in zip(windows, windows[1:]))
+
+
+def test_weighted_pooling_does_not_overweight_small_tail():
+    assert mean_windows([[2, 0], [0, 3]], [{"start": 0, "end": 3}, {"start": 3, "end": 4}]) == [0.75, 0.25]
+
+
+def test_batch_encodes_corpus_once_and_keeps_citations(document):
+    model = WindowModel()
+    runs = search_many(document, ["query one long", "query two long"], model, encoding="window-mean")
+    assert len(model.calls) == 2
+    assert "".join(model.calls[0]) == "".join(c.text for c in document.chunks)
+    assert "".join(model.calls[1]) == "query one longquery two long"
+    for run in runs:
+        assert run["truncation"]["chunk_ids"] == []
+        assert not run["truncation"]["query_truncated"]
+        assert {r["chunk"]["chunk_id"] for r in run["results"]} == {c.chunk_id for c in document.chunks}
+
+
+def test_conflicting_encoding_options_rejected(document):
+    with pytest.raises(ValueError, match="cannot request"):
+        search(document, "query", WindowModel(), allow_truncation=True, encoding="window-mean")
+
+
+def test_group_metrics_do_not_mix_alternatives_or_score_unsupported():
+    from src.retrieval_evaluation import coverage
+    item = {"answerable": True, "evidence_groups": [
+        {"supporting_chunk_ids": ["a", "b"]}, {"supporting_chunk_ids": ["c", "d"]}]}
+    metrics = coverage(item, ["x", "a", "c"])
+    assert metrics["reciprocal_rank_at_10"] == 0.5
+    assert metrics["best_group_recall_at_3"] == 0.5
+    assert metrics["complete_group_at_3"] == 0
+    assert coverage(item, ["c", "d"])["complete_group_at_3"] == 1
+    assert coverage({"answerable": False}, ["a"]) is None
+    with pytest.raises(ValueError, match="Duplicate"):
+        coverage(item, ["a", "a"])
+
+
+def test_draft_evaluation_requires_explicit_opt_in(document):
+    from types import SimpleNamespace
+    from src.retrieval_evaluation import evaluate
+    with pytest.raises(ValueError, match="allow-draft"):
+        evaluate(document, SimpleNamespace(status="draft_pending_human_review"), None, encoding="window-mean")
+
+
+def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document):
+    from src.benchmark import Benchmark
+    from src.retrieval_evaluation import evaluate
+    benchmark = Benchmark.model_validate({
+        "version": "0.1.0", "status": "draft_pending_human_review",
+        "source_sha256": document.source_sha256, "review_method": "Synthetic fixture",
+        "items": [
+            {"id": "supported", "question": "first?", "category": "factual", "answerable": True,
+             "expected_answer": "Synthetic answer", "expected_claims": ["Synthetic claim"],
+             "difficulty": "easy", "notes": "Unit fixture", "evidence": [
+                 {"page": 1, "quote": document.chunks[0].text}]},
+            {"id": "unsupported", "question": "future?", "category": "unsupported", "answerable": False,
+             "expected_answer": None, "expected_claims": [], "difficulty": "easy",
+             "notes": "Unit fixture", "evidence": []},
+        ]})
+    result = evaluate(document, benchmark, WindowModel(), encoding="window-mean", allow_draft=True)
+    assert result["evaluation_status"] == "draft_diagnostic"
+    assert result["answerable_denominator"] == 1 and result["unsupported_excluded"] == 1
+    assert result["items"][1]["metrics"] is None
+    assert result["aggregate"]["complete_group_at_10"] == 1
+    assert benchmark.status == "draft_pending_human_review"

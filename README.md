@@ -305,7 +305,71 @@ the model; output paths cannot overwrite the provided inputs.
 
 The initial net-sales smoke query ranked PDF pages 26 and 32 first and second.
 This demonstrates an end-to-end search, not benchmark accuracy. The next retrieval
-experiment should compare this explicit prefix baseline with encoding that covers
-complete chunks, then add batch evaluation with clearly defined alternative-group
-metrics. All 28 benchmark items still require human review before results can be
+experiment now compares this explicit prefix baseline with encoding that covers
+complete chunks, using the batch diagnostics below. All 28 benchmark items still require human review before results can be
 presented as evaluation against human-reviewed ground truth.
+
+### Full-chunk encoding and batch diagnostics
+
+Use `--encoding window-mean` instead of `--allow-truncation` to encode complete
+chunks. Text is recursively divided near its midpoint, preferring nearby whitespace,
+until each window fits the tokenizer's limit including special tokens. Oversized
+tokens can be split at character boundaries. Windows cover every character in
+order, without overlap, rewriting, or changing persisted chunks and citation IDs.
+The same policy applies to oversized questions.
+
+Each window vector is normalized, then averaged with weights proportional to
+window character lengths. Ranking uses cosine similarity of those pooled vectors.
+The artifact records window character offsets relative to each chunk (add the
+chunk's `raw_start` for page offsets), token counts and pooling policy. Full text
+coverage does not preserve all relationships across window boundaries and does
+not guarantee better retrieval. The prefix policy remains available for comparison.
+
+Run both policies against the current draft labels:
+
+```powershell
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --encoding window-mean --allow-draft --local-files-only --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/dense-window-diagnostic.json
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --encoding prefix --allow-draft --local-files-only --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/dense-prefix-diagnostic.json
+```
+
+These commands require the model downloaded by the initial search command.
+Each batch embeds the corpus once and all questions together. Repeated timing
+fields in per-question artifacts describe the shared batch, not independent runs;
+do not sum them. Ranking time is per question. Outputs retain ranked chunks and
+scores, corpus/benchmark hashes, model revision and label-review status. Draft
+benchmarks are rejected unless `--allow-draft` is explicit; this never updates review labels.
+
+Metrics use only the 23 answerable questions:
+
+- `best_group_recall_at_k`: largest fraction of required chunk IDs recovered in
+  any one evidence group; alternatives are never combined into a mandatory union.
+- `complete_group_at_k`: whether at least one whole evidence group is retrieved.
+- `reciprocal_rank_at_10`: reciprocal of the first rank matching any annotated
+  chunk, or zero when none occurs in the top 10. Its mean is truncated MRR;
+  finding one chunk does not establish complete support.
+
+Five unsupported questions retain retrieved candidates but have null metrics and
+are excluded from aggregates. No abstention accuracy, answer accuracy, nDCG,
+exhaustive relevance, or page-expanded coverage is claimed.
+
+Observed development comparison on the same 314 chunks and 28 draft questions:
+
+| Diagnostic (23 answerable questions) | Prefix | Window mean |
+| --- | ---: | ---: |
+| Complete group @1 | 11/23 | 9/23 |
+| Complete group @3 | 14/23 | 14/23 |
+| Complete group @5 | 17/23 | 15/23 |
+| Complete group @10 | 21/23 | 20/23 |
+| Best-group recall @10 | 0.935 | 0.913 |
+| MRR @10, first annotated chunk | 0.655 | 0.611 |
+
+Window encoding covered all 314 chunks using 530 windows with no overflow.
+It **did not improve these draft-label metrics**. Its top-10 incomplete cases were
+`aapl24-007` (cash balance), `aapl24-009` (cash taxes), and `aapl24-027` (cash total
+plus restricted-cash footnote). This is evidence to inspect pooling and financial
+context failures, not a reason to assume truncation is generally superior.
+
+Next: review those retrieved passages and alternative labels with the source,
+complete human benchmark review, then compare BM25 against the same fixed corpus
+and diagnostic protocol before adding hybrid retrieval. Avoid tuning solely to
+these small, overlapping development cases.

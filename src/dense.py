@@ -39,61 +39,129 @@ def cosine_ranking(ids, vectors, query, top_k):
     return sorted(scores, key=lambda row: (-row[1], row[0]))[:top_k]
 
 
-def search(document, question, model, *, top_k=5, allow_truncation=False):
-    """Encode raw chunk text only; benchmark labels never enter model input.
+def text_windows(text, tokenizer, limit):
+    """Partition all characters into bounded windows; never decode/rewrite text."""
+    def split(start, end):
+        count = len(tokenizer([text[start:end]], truncation=False, padding=False)["input_ids"][0])
+        if count <= limit:
+            return [{"start": start, "end": end, "tokens": count}]
+        if end - start <= 1:
+            raise ValueError("A single character exceeds the model token limit")
+        middle = (start + end) // 2
+        # Prefer nearby whitespace, but always make progress.
+        candidates = [i for i in range(max(start + 1, middle - 40), min(end, middle + 40))
+                      if text[i].isspace()]
+        cut = min(candidates, key=lambda i: abs(i - middle)) if candidates else middle
+        return split(start, cut) + split(cut, end)
+    return split(0, len(text))
 
-    The caller supplies the pinned model. Each run embeds the corpus anew so
-    there is no stale cache or vector-to-chunk mapping to invalidate.
-    """
-    if not question.strip() or top_k < 1:
-        raise ValueError("Require a nonblank question and positive top_k")
+
+def mean_windows(vectors, windows):
+    """Character-weighted mean of unit window embeddings, then cosine at ranking."""
+    result = [0.0] * len(vectors[0])
+    total = sum(w["end"] - w["start"] for w in windows)
+    for vector, window in zip(vectors, windows, strict=True):
+        norm = math.hypot(*vector)
+        if not norm or not math.isfinite(norm) or len(vector) != len(result):
+            raise ValueError("Invalid window embedding")
+        weight = (window["end"] - window["start"]) / total
+        for i, value in enumerate(vector):
+            result[i] += weight * value / norm
+    return result
+
+
+def search(document, question, model, *, top_k=5, allow_truncation=False, encoding="reject"):
+    return search_many(document, [question], model, top_k=top_k,
+                       allow_truncation=allow_truncation, encoding=encoding)[0]
+
+
+def search_many(document, questions, model, *, top_k=5, allow_truncation=False, encoding="reject"):
+    """Encode the corpus once per batch. No labels or answers enter embeddings."""
+    if not questions or any(not q.strip() for q in questions) or top_k < 1:
+        raise ValueError("Require nonblank questions and positive top_k")
+    if encoding not in {"reject", "prefix", "window-mean"}:
+        raise ValueError("Unknown encoding policy")
+    if allow_truncation:
+        if encoding == "window-mean":
+            raise ValueError("Window encoding cannot request truncation")
+        encoding = "prefix"
     validate_document(document)
     if not document.chunks:
         raise ValueError("Document has no chunks")
     texts = [c.text for c in document.chunks]
     started = perf_counter()
-    # Include special tokens, matching the model's input sequence limit.
-    tokens = model.tokenizer(texts + [question], truncation=False, padding=False)["input_ids"]
-    counts = [len(t) for t in tokens]
+    counts = [len(t) for t in model.tokenizer(texts + questions, truncation=False,
+                                             padding=False)["input_ids"]]
     limit = model.max_seq_length
-    truncated_ids = [c.chunk_id for c, count in zip(document.chunks, counts[:-1], strict=True)
-                     if count > limit]
-    query_truncated = counts[-1] > limit
-    if (truncated_ids or query_truncated) and not allow_truncation:
-        raise ValueError(f"Model limit {limit} tokens: {len(truncated_ids)} chunks exceed it; "
-                         f"query exceeds limit: {query_truncated}. Use --allow-truncation "
-                         "to run the explicitly recorded prefix-only baseline.")
+    n = len(texts)
+    oversized_ids = [c.chunk_id for c, count in zip(document.chunks, counts[:n], strict=True) if count > limit]
+    if encoding == "reject" and any(count > limit for count in counts):
+        raise ValueError(f"Model limit {limit} tokens exceeded. Use --encoding window-mean "
+                         "or --allow-truncation for the prefix-only baseline.")
+    manifests = [text_windows(text, model.tokenizer, limit) if encoding == "window-mean"
+                 else [{"start": 0, "end": len(text), "tokens": count}]
+                 for text, count in zip(texts + questions, counts, strict=True)]
     tokenization_seconds = perf_counter() - started
+
+    def encode_group(group_texts, group_windows):
+        inputs = [text[w["start"]:w["end"]] for text, ws in zip(group_texts, group_windows, strict=True) for w in ws]
+        embeddings = model.encode(inputs, batch_size=32, convert_to_numpy=True, show_progress_bar=False).tolist()
+        vectors, cursor = [], 0
+        for ws in group_windows:
+            selected = embeddings[cursor:cursor + len(ws)]
+            vectors.append(mean_windows(selected, ws) if encoding == "window-mean" else selected[0])
+            cursor += len(ws)
+        return vectors
+
     started = perf_counter()
-    vectors = model.encode(texts, batch_size=32, convert_to_numpy=True,
-                           show_progress_bar=False).tolist()
+    vectors = encode_group(texts, manifests[:n])
     corpus_seconds = perf_counter() - started
     started = perf_counter()
-    query = model.encode([question], convert_to_numpy=True, show_progress_bar=False).tolist()[0]
+    queries = encode_group(questions, manifests[n:])
     query_seconds = perf_counter() - started
-    started = perf_counter()
-    ranking = cosine_ranking([c.chunk_id for c in document.chunks], vectors, query, top_k)
-    ranking_seconds = perf_counter() - started
     chunks = {c.chunk_id: c for c in document.chunks}
-    token_counts = dict(zip(chunks, counts[:-1], strict=True))
-    return {
-        "schema_version": 1, "question": question, "requested_top_k": top_k,
-        "source_sha256": document.source_sha256,
-        "document_model_sha256": hashlib.sha256(document.model_dump_json().encode()).hexdigest(),
-        "chunking": document.chunking, "chunk_count": len(texts),
-        "embedding_dimensions": len(query), "similarity": "cosine",
-        "tie_breaker": "chunk_id_ascending", "embedding_input": "chunk_text_only",
-        "truncation": {"policy": "prefix" if allow_truncation else "reject",
-                       "max_sequence_tokens": limit, "chunk_ids": truncated_ids,
-                       "query_tokens": counts[-1], "query_truncated": query_truncated},
-        "timings_seconds": {"tokenization": tokenization_seconds, "corpus_encoding": corpus_seconds,
-                            "query_encoding": query_seconds, "ranking": ranking_seconds},
-        "results": [{"rank": rank, "score": score,
-                     "embedding_input_tokens": token_counts[cid],
-                     "embedding_truncated": cid in truncated_ids,
-                     "chunk": chunks[cid].model_dump(mode="json")}
-                    for rank, (cid, score) in enumerate(ranking, 1)],
-    }
+    token_counts = dict(zip(chunks, counts[:n], strict=True))
+    truncated_ids = oversized_ids if encoding == "prefix" else []
+    corpus_hash = hashlib.sha256(document.model_dump_json().encode()).hexdigest()
+    results = []
+    for index, (question, query) in enumerate(zip(questions, queries, strict=True)):
+        started = perf_counter()
+        ranking = cosine_ranking(list(chunks), vectors, query, top_k)
+        results.append({
+            "schema_version": 2, "question": question, "requested_top_k": top_k,
+            "source_sha256": document.source_sha256, "document_model_sha256": corpus_hash,
+            "chunking": document.chunking, "chunk_count": n,
+            "embedding_dimensions": len(query), "similarity": "cosine",
+            "tie_breaker": "chunk_id_ascending", "embedding_input": "chunk_text_only",
+            "encoding": {"policy": encoding, "pooling": "character_weighted_unit_mean" if encoding == "window-mean" else None,
+                         "chunk_windows": dict(zip(chunks, manifests[:n], strict=True)),
+                         "query_windows": manifests[n + index]},
+            "truncation": {"policy": encoding, "max_sequence_tokens": limit,
+                           "chunk_ids": truncated_ids, "query_tokens": counts[n + index],
+                           "query_truncated": encoding == "prefix" and counts[n + index] > limit},
+            "timings_seconds": {"tokenization_batch": tokenization_seconds, "corpus_encoding": corpus_seconds,
+                                "query_encoding_batch": query_seconds, "ranking": perf_counter() - started},
+            "results": [{"rank": rank, "score": score, "embedding_input_tokens": token_counts[cid],
+                         "embedding_truncated": cid in truncated_ids, "chunk": chunks[cid].model_dump(mode="json")}
+                        for rank, (cid, score) in enumerate(ranking, 1)],
+        })
+    return results
+
+
+def load_model(local_files_only=False):
+    import torch
+    from sentence_transformers import SentenceTransformer
+    torch.manual_seed(0)
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
+    return SentenceTransformer(MODEL, revision=REVISION, device="cpu", trust_remote_code=False,
+                               local_files_only=local_files_only)
+
+
+def runtime_metadata():
+    return {"created_at": datetime.now(timezone.utc).isoformat(),
+            "model": {"name": MODEL, "revision": REVISION, "device": "cpu", "threads": 1},
+            "versions": {name: version(name) for name in ("sentence-transformers", "torch", "transformers")}}
 
 
 def main():
@@ -104,6 +172,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--allow-truncation", action="store_true")
+    parser.add_argument("--encoding", choices=["reject", "prefix", "window-mean"], default="reject")
     parser.add_argument("--local-files-only", action="store_true", help="Use downloaded model without network")
     args = parser.parse_args()
     inputs = {args.document.resolve()}
@@ -116,22 +185,13 @@ def main():
     document = ProcessedFiling.model_validate_json(args.document.read_text(encoding="utf-8"))
     validate_document(document)
     verification = verify_source_pdf(document, args.source_pdf) if args.source_pdf else {"status": "not_checked"}
-    # Lazy imports keep ingestion and offline unit tests independent of model loading.
-    import torch
-    from sentence_transformers import SentenceTransformer
-    torch.manual_seed(0)
-    torch.set_num_threads(1)
-    torch.use_deterministic_algorithms(True)
     started = perf_counter()
-    model = SentenceTransformer(MODEL, revision=REVISION, device="cpu", trust_remote_code=False,
-                                local_files_only=args.local_files_only)
+    model = load_model(args.local_files_only)
     loading_seconds = perf_counter() - started
     result = search(document, args.question, model, top_k=args.top_k,
-                    allow_truncation=args.allow_truncation)
-    result.update({"created_at": datetime.now(timezone.utc).isoformat(),
-                   "model": {"name": MODEL, "revision": REVISION, "device": "cpu", "threads": 1},
-                   "versions": {name: version(name) for name in ("sentence-transformers", "torch", "transformers")},
-                   "source_pdf_verification": verification})
+                    allow_truncation=args.allow_truncation, encoding=args.encoding)
+    result.update(runtime_metadata())
+    result["source_pdf_verification"] = verification
     result["timings_seconds"]["model_loading"] = loading_seconds
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
