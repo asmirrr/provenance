@@ -7,7 +7,7 @@ from pathlib import Path
 from src.benchmark import Benchmark, bind_benchmark
 from src import bm25, hybrid
 from src.dense import load_model, runtime_metadata, search_many
-from src.evidence import verify_source_pdf, select_page_context
+from src.evidence import verify_source_pdf, select_page_context, select_chunk_context
 from src.ingestion.pipeline import ProcessedFiling
 
 
@@ -47,6 +47,17 @@ def page_coverage(document, item, ranked_ids, max_chars=8000, page_policy="stric
             "complete_group": bool(groups) if item["answerable"] else None}
 
 
+def chunk_coverage(document, item, ranked_ids, max_chars=8000):
+    selection = select_chunk_context(document, ranked_ids, max_chars=max_chars)
+    # Binder-defined supporting IDs cover each anchor's non-whitespace text.
+    # Unlike page expansion, this selector adds no unrequested source text.
+    selected = set(selection["selected_chunk_ids"])
+    groups = [g["group_id"] for g in item["evidence_groups"]
+              if g["supporting_chunk_ids"] and set(g["supporting_chunk_ids"]) <= selected]
+    return {**selection, "complete_group_ids": groups if item["answerable"] else None,
+            "complete_group": bool(groups) if item["answerable"] else None}
+
+
 def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000, page_policy="strict"):
     if len(runs) != len(bound["items"]):
         raise ValueError("Retrieval run item count mismatch")
@@ -67,6 +78,7 @@ def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000, 
         rows.append({"item_id": item["id"], "category": item["category"],
                      "metrics": coverage(item, ids),
                      "page_context": {str(k): page_coverage(document, item, ids[:k], max_chars, page_policy) for k in (1, 3, 5, 10)},
+                     "chunk_context": {str(k): chunk_coverage(document, item, ids[:k], max_chars) for k in (1, 3, 5, 10)},
                      "retrieval": run})
     measured = [r["metrics"] for r in rows if r["metrics"] is not None]
     supported = [r for r in rows if r["metrics"] is not None]
@@ -78,7 +90,13 @@ def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000, 
                            "over_budget_count": sum(v["status"] == "over_budget" for v in values),
                            "requests_with_omissions": sum(bool(v["omitted_pages"]) for v in values),
                            "complete_group_rate": sum(v["complete_group"] for v in values) / len(values) if values else None}
-    return {"schema_version": 3, "retriever": retriever, "benchmark_version": benchmark.version,
+    chunk_context = {}
+    for k in (1, 3, 5, 10):
+        values = [r["chunk_context"][str(k)] for r in supported]
+        chunk_context[str(k)] = {"complete_group_count": sum(v["complete_group"] for v in values),
+                                 "answerable_denominator": len(values),
+                                 "requests_with_omissions": sum(bool(v["omitted_chunks"]) for v in values)}
+    return {"schema_version": 4, "retriever": retriever, "benchmark_version": benchmark.version,
             "benchmark_model_sha256": bound["benchmark_model_sha256"],
             "document_model_sha256": bound["document_model_sha256"],
             "benchmark_status": benchmark.status,
@@ -86,7 +104,9 @@ def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000, 
             "answerable_denominator": len(measured), "unsupported_excluded": len(rows) - len(measured),
             "aggregate": {key: sum(m[key] for m in measured) / len(measured) for key in measured[0]} if measured else {},
             "page_context_policy": {"name": "all-selected-pages-or-error-v1" if page_policy == "strict" else "ranked-whole-pages-fit-v1", "max_chars": max_chars},
-            "page_context_aggregate": context, "items": rows}
+            "page_context_aggregate": context,
+            "chunk_context_policy": {"name": "ranked-whole-chunks-fit-v1", "max_chars": max_chars},
+            "chunk_context_aggregate": chunk_context, "items": rows}
 
 
 def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_draft=False, retriever="dense", max_chars=8000, page_policy="strict"):

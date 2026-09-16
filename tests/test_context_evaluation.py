@@ -196,3 +196,30 @@ def test_ranked_fit_no_page_fits_and_empty_candidates(inputs):
     assert select_page_context(doc, [], max_chars=1)["status"] == "no_results"
     with pytest.raises(ValueError):
         select_page_context(doc, [], policy="unknown")
+
+
+def test_chunk_selection_preserves_spans_and_skips_oversized_candidate(inputs):
+    from src.evidence import select_chunk_context
+    doc, _, _ = inputs
+    ids = [doc.chunks[0].chunk_id, doc.chunks[-1].chunk_id]
+    budget = len(doc.chunks[-1].text)
+    result = select_chunk_context(doc, ids, max_chars=budget)
+    assert result["selected_chunk_ids"] == [ids[-1]]
+    assert result["omitted_chunks"][0]["chunk_id"] == ids[0]
+    assert result["delivered_chars"] == budget
+    assert result["bundle"]["spans"][0]["text"] == doc.chunks[-1].text
+    assert result == select_chunk_context(doc, ids, max_chars=budget)
+    with pytest.raises(ValueError):
+        select_chunk_context(doc, ids * 2)
+
+
+def test_chunk_context_does_not_get_page_expansion_credit(inputs):
+    from src.retrieval_evaluation import chunk_coverage
+    doc, _, item = inputs
+    ids = [doc.chunks[0].chunk_id]
+    assert page_coverage(doc, item, ids)["complete_group"]
+    assert not chunk_coverage(doc, item, ids)["complete_group"]
+    ids = item["supporting_chunk_ids"]
+    exact = sum(len(c.text) for c in doc.chunks if c.chunk_id in ids)
+    assert chunk_coverage(doc, item, ids, exact)["complete_group"]
+    assert not chunk_coverage(doc, item, ids, exact - 1)["complete_group"]

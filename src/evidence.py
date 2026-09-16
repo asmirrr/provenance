@@ -141,6 +141,31 @@ def select_page_context(document: ProcessedFiling, ranked_ids: list[str], *,
             "delivered_chars": used, "max_chars": max_chars, "bundle": bundle}
 
 
+def select_chunk_context(document: ProcessedFiling, ranked_ids: list[str], *, max_chars: int = 8000) -> dict:
+    """Greedy whole-chunk selection in retrieval order, with explicit omissions."""
+    if max_chars < 1:
+        raise ValueError("Context budget must be positive")
+    validate_document(document)
+    chunks = {c.chunk_id: c for c in document.chunks}
+    if len(set(ranked_ids)) != len(ranked_ids) or any(cid not in chunks for cid in ranked_ids):
+        raise ValueError("Require unique known retrieved chunk IDs")
+    selected, omitted, used = [], [], 0
+    for rank, cid in enumerate(ranked_ids, 1):
+        size = len(chunks[cid].text)
+        if size <= max_chars - used:
+            selected.append(cid)
+            used += size
+        else:
+            omitted.append({"chunk_id": cid, "rank": rank, "chunk_chars": size,
+                            "remaining_chars": max_chars - used,
+                            "reason": "chunk_exceeds_total_budget" if size > max_chars else "insufficient_remaining_budget"})
+    bundle = resolve_evidence(document, selected, max_chars=max_chars) if selected else None
+    return {"status": "no_results" if not ranked_ids else "over_budget" if not selected else "partial" if omitted else "ok",
+            "policy": "ranked-chunks-fit", "selected_chunk_ids": selected, "omitted_chunks": omitted,
+            "required_chars": sum(len(chunks[cid].text) for cid in ranked_ids),
+            "delivered_chars": used, "max_chars": max_chars, "bundle": bundle}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("document", type=Path)

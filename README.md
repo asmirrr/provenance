@@ -581,6 +581,36 @@ evidence sufficiency, diversity or combinations of pages. Adding candidates can
 fill remaining space, but cannot displace an earlier accepted page. These draft
 results do not establish answer accuracy or eliminate the need for human review.
 
-Next: inspect these three remaining context failures and review their source
-labels with a human. Use that evidence to decide whether smaller context units or
-reranking merit a measured experiment before introducing generation.
+Inspection found the required pages in the hybrid candidate set for all three
+failures, but earlier accepted pages consumed the available budget. This motivated
+the smaller-context experiment below, without editing labels or rankings.
+
+### Whole-chunk context comparison
+
+Evaluation and replay also report `chunk_context` and `chunk_context_aggregate`.
+`src.evidence.select_chunk_context` considers whole retrieved chunks in rank order,
+accepts those that fit, and records omitted IDs, ranks, sizes and reasons. It never
+expands a page or changes text. The same character budget and candidate cutoffs
+apply to both policies; raw retrieval metrics remain separate. Complete support
+requires every bound supporting chunk in at least one evidence group to survive
+selection, so dropping a header or row cannot receive page-expansion credit.
+
+Replaying the command above regenerates both comparisons in one artifact. At top
+10, the 8,000-character budget yields:
+
+| Complete context evidence (23 answerable draft questions) | Dense prefix | BM25 | Hybrid |
+| --- | ---: | ---: | ---: |
+| Ranked whole pages | 17/23 | 20/23 | 20/23 |
+| Ranked whole chunks | 18/23 | 17/23 | 22/23 |
+
+For hybrid, whole chunks preserve evidence for `aapl24-015`, `aapl24-027` and
+`aapl24-028`, which whole-page selection omitted. However, chunk context still
+misses `aapl24-009`: its tax-row chunk was not in the fused top 10. Page expansion
+recovers that row from a retrieved chunk on the same page. Both approaches omit
+some candidates at top 10; these results describe delivered evidence, not an
+unbounded union. No per-question oracle chooses whichever policy matches the labels.
+
+Next: review the benchmark with a human and choose a fixed context policy for an
+end-to-end research run. A query-facing retrieval/context command is the next
+useful integration step; generation and verification should consume its explicit
+citations and omissions rather than silently selecting more evidence.
