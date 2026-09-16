@@ -3,7 +3,8 @@
 Traceable financial intelligence, built from source evidence upward. The current
 milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
 chunks, with an offline evidence-context diagnostic set and a first dense retrieval
-baseline, BM25 lexical retrieval, and a fixed hybrid comparison. LLM generation
+baseline, BM25 lexical retrieval, a fixed hybrid comparison, and a query command
+that exports bounded cited evidence. LLM generation
 and claim verification are not implemented.
 
 ## Run locally (PowerShell)
@@ -610,7 +611,41 @@ recovers that row from a retrieved chunk on the same page. Both approaches omit
 some candidates at top 10; these results describe delivered evidence, not an
 unbounded union. No per-question oracle chooses whichever policy matches the labels.
 
-Next: review the benchmark with a human and choose a fixed context policy for an
-end-to-end research run. A query-facing retrieval/context command is the next
-useful integration step; generation and verification should consume its explicit
-citations and omissions rather than silently selecting more evidence.
+### Query a filing without benchmark labels
+
+From the repository directory, retrieve evidence and save the complete run:
+
+```powershell
+uv run python -m src.query data/processed/aapl-2024-10k.json "How much cash did Apple pay for income taxes in 2024?" --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/query-bm25.json
+```
+
+The default is BM25 with whole-chunk context: it requires no model download.
+The command retrieves up to 10 candidates and delivers whole spans within an
+8,000-character text budget. It skips candidates that cannot fit and records
+every omission. This budget excludes JSON metadata and is not a token limit.
+Use `--top-k` (1–10), `--max-chars`, or `--context page` to change these choices.
+Page context uses ranked-fit selection, with no automatic adjacent-page expansion.
+
+To use the existing hybrid model and whole-page context:
+
+```powershell
+uv run python -m src.query data/processed/aapl-2024-10k.json "How much cash did Apple pay for income taxes in 2024?" --retriever hybrid --encoding prefix --local-files-only --context page --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/query-hybrid.json
+```
+
+Dense and hybrid modes require an explicit `--encoding`: `prefix` permits embedding
+truncation, `window-mean` covers all text, and `reject` fails on oversized inputs.
+Exported citations always retain original text. `--local-files-only` requires the
+pinned model to be cached; omit it to allow the first download. Models are encoded
+again on each run; there is no persistent index yet.
+
+The JSON separates `retrieval` (all candidates, scores and configuration) from
+`selection.bundle` (only delivered source spans). Read `selection.status` and
+omissions alongside the evidence. `ok` and `partial` describe context delivery,
+not verified support; `no_results` and `over_budget` do not establish that the
+question is unanswerable. No generated answer or benchmark labels are used.
+PDF verification is recorded as `matched` or `not_checked`; a mismatch fails
+before retrieval. Matching bytes does not independently authenticate extracted text.
+
+Next: add a small, provider-independent structured answer/citation contract and
+validate that every cited span was actually delivered before introducing an LLM.
+Human benchmark review remains required before reporting validated accuracy.
