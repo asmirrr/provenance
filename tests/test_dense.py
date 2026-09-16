@@ -187,7 +187,7 @@ def test_draft_evaluation_requires_explicit_opt_in(document):
         evaluate(document, SimpleNamespace(status="draft_pending_human_review"), None, encoding="window-mean")
 
 
-@pytest.mark.parametrize("retriever", ["dense", "bm25"])
+@pytest.mark.parametrize("retriever", ["dense", "bm25", "hybrid"])
 def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document, retriever):
     from src.benchmark import Benchmark
     from src.retrieval_evaluation import evaluate
@@ -203,7 +203,7 @@ def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document, 
              "expected_answer": None, "expected_claims": [], "difficulty": "easy",
              "notes": "Unit fixture", "evidence": []},
         ]})
-    result = evaluate(document, benchmark, WindowModel() if retriever == "dense" else None,
+    result = evaluate(document, benchmark, WindowModel() if retriever != "bm25" else None,
                       encoding="window-mean", allow_draft=True, retriever=retriever)
     assert result["evaluation_status"] == "draft_diagnostic"
     assert result["answerable_denominator"] == 1 and result["unsupported_excluded"] == 1

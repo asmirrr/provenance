@@ -3,7 +3,8 @@
 Traceable financial intelligence, built from source evidence upward. The current
 milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
 chunks, with an offline evidence-context diagnostic set and a first dense retrieval
-baseline plus a BM25 lexical baseline. LLM generation and claim verification are not implemented.
+baseline, BM25 lexical retrieval, and a fixed hybrid comparison. LLM generation
+and claim verification are not implemented.
 
 ## Run locally (PowerShell)
 
@@ -429,6 +430,58 @@ not answer accuracy, exhaustive relevance, or generalization. All 28 questions
 remain pending human review, and the five unsupported questions are excluded from
 these aggregates.
 
-Next: review source labels with a human and run a fixed, explicitly documented
-hybrid combination against these baselines. Inspect rank-1 regressions as well as
-top-10 coverage before considering reranking or generation.
+The fixed hybrid comparison below inspects early-ranking gains as well as top-10
+coverage losses. Human source-label review remains outstanding.
+
+## Fixed hybrid rank fusion
+
+`src.hybrid` combines dense and BM25 candidates using
+[reciprocal rank fusion (Cormack et al., 2009)](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf):
+each retrieved chunk receives `1 / (60 + rank)` from each component that retrieved
+it. Missing candidates contribute zero. Both components have equal weights; the
+constant 60 and candidate depth 10 are fixed, not optimized against these labels.
+Ties use chunk ID. Raw BM25 and cosine scores remain separate and are never added.
+
+```powershell
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --retriever hybrid --encoding prefix --allow-draft --local-files-only --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/hybrid-prefix-diagnostic.json
+```
+
+This reruns both components against the same corpus and questions. It fuses the
+union of their top-10 candidates and returns at most 10. Each result records which
+retrievers contributed, their original ranks and scores, and each RRF contribution.
+The artifact retains the full component runs, including dense truncation metadata,
+and rejects inconsistent source, corpus, question or citation identities. Batch
+component time is shared across questions; fusion time is measured per question.
+
+The fused shortlist can lose evidence present in the larger candidate union.
+Scores are ranking utilities, not confidence or sufficiency judgments. This
+comparison uses dense-prefix explicitly; `--encoding window-mean` is available as
+a separate experiment and is not silently substituted. No reranker is involved.
+
+Observed comparison on the same 23 answerable draft questions:
+
+| Diagnostic | Dense prefix | BM25 | Hybrid RRF |
+| --- | ---: | ---: | ---: |
+| Complete group @1 | 11/23 | 9/23 | 14/23 |
+| Complete group @3 | 14/23 | 15/23 | 19/23 |
+| Complete group @5 | 17/23 | 19/23 | 21/23 |
+| Complete group @10 | 21/23 | 23/23 | 22/23 |
+| MRR @10, first annotated chunk | 0.655 | 0.643 | 0.841 |
+
+The component reruns produced identical ranks, scores and citations to the saved
+baselines, with matching corpus and benchmark hashes. Replaying fusion from the
+saved component lists reproduced all 28 fused rankings. No parameters or evidence
+labels were changed after observing results.
+
+Hybrid improves early coverage here, but loses BM25's complete top-10 evidence for
+`aapl24-009` (cash taxes). Both methods rank the first required page-36 chunk second;
+fusion promotes it to first. The other required chunk is BM25-only at rank 7 and
+falls outside the fused top 10 as agreement and competing single-method candidates
+take those slots. Finding the right page does not imply finding the complete
+annotated chunk group. No dense-prefix complete-group rank-1 successes were lost.
+
+This is a small draft-label development result, not proof of general improvement
+or answer accuracy. Unsupported items remain excluded and human review is pending.
+Next: measure bounded page-expanded context separately from raw-chunk retrieval,
+especially the cash-tax failure, and review benchmark labels with a human. Decide
+whether reranking is justified only after inspecting the remaining failures.

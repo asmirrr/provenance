@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from src.benchmark import Benchmark, bind_benchmark
-from src import bm25
+from src import bm25, hybrid
 from src.dense import load_model, runtime_metadata, search_many
 from src.evidence import verify_source_pdf
 from src.ingestion.pipeline import ProcessedFiling
@@ -39,6 +39,8 @@ def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_d
         runs = bm25.search_many(document, questions, top_k=10)
     elif retriever == "dense":
         runs = search_many(document, questions, model, top_k=10, encoding=encoding)
+    elif retriever == "hybrid":
+        runs = hybrid.search_many(document, questions, model, top_k=10, encoding=encoding)
     else:
         raise ValueError("Unknown retriever")
     rows = []
@@ -62,7 +64,7 @@ def main():
     parser.add_argument("document", type=Path)
     parser.add_argument("benchmark", type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--retriever", choices=["dense", "bm25"], default="dense")
+    parser.add_argument("--retriever", choices=["dense", "bm25", "hybrid"], default="dense")
     parser.add_argument("--encoding", choices=["prefix", "window-mean"])
     parser.add_argument("--allow-draft", action="store_true")
     parser.add_argument("--local-files-only", action="store_true")
@@ -80,10 +82,10 @@ def main():
     # Validate source anchors before model loading or output writes.
     bind_benchmark(document, benchmark)
     verification = verify_source_pdf(document, args.source_pdf) if args.source_pdf else {"status": "not_checked"}
-    model = load_model(args.local_files_only) if args.retriever == "dense" else None
+    model = load_model(args.local_files_only) if args.retriever != "bm25" else None
     result = evaluate(document, benchmark, model, retriever=args.retriever,
                       encoding=args.encoding or "window-mean", allow_draft=args.allow_draft)
-    result.update(runtime_metadata() if args.retriever == "dense" else bm25.runtime_metadata())
+    result.update(runtime_metadata() if args.retriever != "bm25" else bm25.runtime_metadata())
     result["source_pdf_verification"] = verification
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
