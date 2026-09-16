@@ -646,6 +646,45 @@ question is unanswerable. No generated answer or benchmark labels are used.
 PDF verification is recorded as `matched` or `not_checked`; a mismatch fails
 before retrieval. Matching bytes does not independently authenticate extracted text.
 
-Next: add a small, provider-independent structured answer/citation contract and
-validate that every cited span was actually delivered before introducing an LLM.
-Human benchmark review remains required before reporting validated accuracy.
+### Structured answer and citation validation
+
+`src.answer.Answer` defines a provider-independent response contract. An `answered`
+response has one or more claims, each with nonempty exact citations. An `abstained`
+response has no claims and a nonblank `abstention_reason`. Unknown fields and
+coerced citation coordinates are rejected. This module does not generate answers.
+
+The response fields are `schema_version: 1`, `query_sha256`, `status`, `claims`,
+and optional `abstention_reason`. Each claim contains `text` and `citations`;
+each citation contains `page`, `raw_start`, `raw_end`, and `quote`. Coordinates
+are one-based PDF pages and half-open character offsets in raw extracted page
+text, exactly as in the evidence bundle. A quote must fit within one delivered
+span; use multiple citations for separate headers, rows, or chunks.
+
+Compute `query_sha256` with `src.answer.query_digest(run)` on the entire parsed
+query JSON. Whitespace/key ordering in the JSON file do not affect this digest;
+rerunning retrieval produces a new artifact and requires a new binding.
+`Answer.model_json_schema()` exposes the contract for later provider integration.
+After preparing an answer JSON, validate it with:
+
+```powershell
+uv run python -m src.answer data/processed/aapl-2024-10k.json data/processed/query-hybrid.json data/processed/manual-answer-smoke.json --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/answer-validation-smoke.json
+```
+
+The example answer file is a local, manually prepared smoke artifact, not created
+by the query command. The smoke check used PDF page 36's year/unit header and
+income-tax payment row for the $26,102 million fiscal-2024 value; both citations
+passed. This is an integrity check, not a benchmark accuracy measurement.
+
+Validation checks corpus identity, retrieved citations, reconstructed context
+selection, and every exact quotation. It rejects citations to omitted evidence
+even when that text exists elsewhere in the filing. Output records
+`citation_integrity: passed`, while `claim_support`, `answer_completeness`, and
+`abstention_correctness` remain `not_checked`. A false claim with a genuine quote
+can pass these mechanical checks. Hashes bind supplied artifacts; they are not
+signatures and do not authenticate extraction or prove that a ranking was produced
+by the recorded model. Optional PDF verification checks byte identity separately.
+
+Next: connect one optional LLM provider to the bounded query evidence and this
+contract, retaining raw responses and failing explicitly on invalid citations.
+Human benchmark review remains required before reporting validated accuracy;
+semantic claim verification and calculation checks are still later milestones.
