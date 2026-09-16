@@ -482,6 +482,60 @@ annotated chunk group. No dense-prefix complete-group rank-1 successes were lost
 
 This is a small draft-label development result, not proof of general improvement
 or answer accuracy. Unsupported items remain excluded and human review is pending.
-Next: measure bounded page-expanded context separately from raw-chunk retrieval,
-especially the cash-tax failure, and review benchmark labels with a human. Decide
-whether reranking is justified only after inspecting the remaining failures.
+The bounded context diagnostic below examines this cash-tax failure separately
+from raw-chunk retrieval. Human label review is still required before treating the
+benchmark as ground truth.
+
+## Page-context diagnostics from retrieved chunks
+
+The evaluator now reports `page_context` at top 1, 3, 5 and 10 separately from
+unchanged chunk-retrieval metrics. It expands only pages actually reached by the
+retriever, deduplicates them, and tests every exact quote span in each evidence
+group against the returned context. One complete alternative group suffices;
+fragments of different groups are never mixed. Benchmark anchors are used only
+to check coverage, never to select pages. No adjacent pages are inferred.
+
+The fixed policy is **all selected pages or an explicit budget failure**, with an
+8,000-character default (`--max-context-chars`). Over-budget requests return no
+bundle, zero delivered characters and incomplete delivered coverage. Required
+character counts and selected pages remain recorded. The denominator includes
+failed deliveries; it is not restricted to successful context requests. Unsupported
+questions get context diagnostics but null evidence-completeness labels and remain
+excluded from aggregates. Complete context still does not establish answer accuracy.
+
+Existing rankings can be replayed without model loading or retrieval:
+
+```powershell
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --retrieval-run data/processed/hybrid-prefix-diagnostic.json --allow-draft --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/hybrid-page-context.json
+```
+
+Replay requires matching corpus and benchmark hashes, item IDs/order, questions,
+retrieval depth, ranks and full chunk citations. It ignores saved metrics and
+recomputes them from the supplied source models and ranked IDs. The output records
+the input artifact's path and byte hash; that artifact retains the original model,
+settings and runtime metadata. These are consistency checks, not proof that the
+saved scores were honestly generated. Output cannot overwrite supplied inputs.
+For the other baselines substitute `bm25-diagnostic.json` or
+`dense-prefix-diagnostic.json` and use distinct output filenames.
+
+Observed delivered complete-group coverage under the 8,000-character policy:
+
+| Diagnostic (23 answerable draft questions) | Dense prefix | BM25 | Hybrid |
+| --- | ---: | ---: | ---: |
+| Top-1 page context complete | 12/23 | 10/23 | 16/23 |
+| Top-3 page context complete | 13/23 | 8/23 | 17/23 |
+| Top-3 over-budget requests | 7/23 | 13/23 | 5/23 |
+| Top-5 over-budget requests | 23/23 | 23/23 | 23/23 |
+| Top-10 over-budget requests | 23/23 | 23/23 | 23/23 |
+
+For `aapl24-009`, hybrid's top result expands PDF page 36 to 2,195 characters and
+recovers both required fragments, despite the tax-row chunk ranking 11th in fusion.
+Top-3 page expansion also fits (5,731 characters). Top-5 needs 10,425 characters
+and is rejected. Raw retrieval scores remain unchanged: expanded text does not
+retroactively count as retrieved chunks. The top-5/10 context failures reflect
+this strict budget policy, not absence of the underlying evidence.
+
+Next: introduce and compare a deterministic, budget-aware context selection policy
+that uses retrieval order only, logs omitted pages, and preserves complete selected
+pages. Keep this separate from retrieval metrics and human benchmark review before
+deciding whether reranking or generation is justified.
