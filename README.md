@@ -535,7 +535,52 @@ and is rejected. Raw retrieval scores remain unchanged: expanded text does not
 retroactively count as retrieved chunks. The top-5/10 context failures reflect
 this strict budget policy, not absence of the underlying evidence.
 
-Next: introduce and compare a deterministic, budget-aware context selection policy
-that uses retrieval order only, logs omitted pages, and preserves complete selected
-pages. Keep this separate from retrieval metrics and human benchmark review before
-deciding whether reranking or generation is justified.
+The ranked-fit policy below addresses these budget failures without changing the
+retrieval rankings or human review status.
+
+### Budget-aware selection of whole pages
+
+`--page-policy ranked-fit` considers distinct pages in first-retrieved order. It
+keeps a whole cleaned page if it fits the remaining character budget, otherwise
+records the omission and continues to later candidates. Repeated hits on a page
+do not cost extra characters or change its priority. No page is trimmed, no
+adjacent page is inferred, and benchmark labels never enter the selector.
+The reusable implementation is `src.evidence.select_page_context`.
+
+```powershell
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --retrieval-run data/processed/hybrid-prefix-diagnostic.json --page-policy ranked-fit --allow-draft --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/hybrid-ranked-context.json
+```
+
+The default remains `--page-policy strict` for reproducibility. Both policies use
+the same default 8,000-character budget. Artifacts now distinguish `candidate_pages`
+from actually delivered `selected_pages`. Each omitted page records its first
+retrieval rank, full size, remaining budget, and reason. A partly delivered request
+has status `partial`; `over_budget` means no candidate page could be delivered.
+`required_chars` still counts all candidate pages, while `delivered_chars` counts
+only returned spans. The page-context aggregate includes `requests_with_omissions`
+so partial selection is not mistaken for delivery of every candidate.
+
+Observed complete evidence-group coverage under ranked-fit (23 answerable draft items):
+
+| Candidate cutoff | Dense prefix | BM25 | Hybrid |
+| --- | ---: | ---: | ---: |
+| Top 1 | 12/23 | 10/23 | 16/23 |
+| Top 3 | 17/23 | 16/23 | 20/23 |
+| Top 5 | 17/23 | 19/23 | 20/23 |
+| Top 10 | 17/23 | 20/23 | 20/23 |
+
+Every answerable request delivered some context within budget. At top 5 and top 10,
+all 23 requests omitted pages. For hybrid, top-3 completeness improves from 17/23
+under strict delivery to 20/23 under ranked-fit. The tax case remains complete at
+top 10: pages 36, 32, 37 and 33 use 6,830 characters. Raw chunk-retrieval scores
+remain unchanged, and unsupported questions still have no completeness score.
+
+Hybrid's incomplete top-10 context cases are `aapl24-015`, `aapl24-027` and
+`aapl24-028`. This greedy policy prefers early-ranked pages; it does not optimize
+evidence sufficiency, diversity or combinations of pages. Adding candidates can
+fill remaining space, but cannot displace an earlier accepted page. These draft
+results do not establish answer accuracy or eliminate the need for human review.
+
+Next: inspect these three remaining context failures and review their source
+labels with a human. Use that evidence to decide whether smaller context units or
+reranking merit a measured experiment before introducing generation.

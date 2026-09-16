@@ -133,3 +133,66 @@ def test_replay_cli_does_not_load_model_and_protects_input(inputs, tmp_path, mon
     assert result["retriever"] == "bm25"
     assert result["replayed_from"]["sha256"]
     assert result["page_context_policy"]["max_chars"] == 8000
+
+
+def test_ranked_fit_skips_large_page_then_keeps_later_page(inputs):
+    from src.evidence import select_page_context
+    doc, _, _ = inputs
+    ids = [doc.chunks[0].chunk_id, doc.chunks[1].chunk_id, doc.chunks[-1].chunk_id]
+    size = len(doc.pages[1].text)
+    result = select_page_context(doc, ids, max_chars=size)
+    assert result["candidate_pages"] == [1, 2]
+    assert result["selected_pages"] == [2] and result["delivered_chars"] == size
+    assert result["status"] == "partial"
+    assert result["omitted_pages"] == [{"page": 1, "first_rank": 1,
+        "page_chars": len(doc.pages[0].text), "remaining_chars": size, "reason": "page_exceeds_total_budget"}]
+    assert result["bundle"]["selected_chunk_ids"] == [ids[-1]]
+    assert result["bundle"]["spans"][0]["text"] == doc.pages[1].text
+
+
+def test_ranked_fit_uses_rank_order_and_preserves_complete_pages(inputs):
+    from src.evidence import select_page_context
+    doc, _, _ = inputs
+    ids = [doc.chunks[0].chunk_id, doc.chunks[-1].chunk_id]
+    size = len(doc.pages[0].text)
+    forward = select_page_context(doc, ids, max_chars=size)
+    backward = select_page_context(doc, ids[::-1], max_chars=size)
+    assert forward["selected_pages"] == [1]
+    assert backward["selected_pages"] == [2]
+    assert forward["omitted_pages"][0]["reason"] == "insufficient_remaining_budget"
+    assert forward["bundle"]["spans"][0]["text"] == doc.pages[0].text
+    assert forward == select_page_context(doc, ids, max_chars=size)
+
+
+def test_ranked_fit_selection_is_independent_of_labels(inputs):
+    doc, _, item = inputs
+    ids = [doc.chunks[0].chunk_id, doc.chunks[-1].chunk_id]
+    first = page_coverage(doc, item, ids, len(doc.pages[0].text), "ranked-fit")
+    changed = deepcopy(item)
+    changed["answerable"] = False
+    changed["evidence_groups"] = []
+    second = page_coverage(doc, changed, ids, len(doc.pages[0].text), "ranked-fit")
+    assert first["bundle"] == second["bundle"]
+    assert first["omitted_pages"] == second["omitted_pages"]
+    assert first["complete_group"] and second["complete_group"] is None
+
+
+def test_ranked_fit_replay_preserves_retrieval_and_reports_policy(inputs):
+    doc, benchmark, _ = inputs
+    original = evaluate(doc, benchmark, retriever="bm25", allow_draft=True)
+    result = replay(doc, benchmark, original, allow_draft=True, page_policy="ranked-fit")
+    assert result["aggregate"] == original["aggregate"]
+    assert result["items"][0]["retrieval"] == original["items"][0]["retrieval"]
+    assert result["page_context_policy"]["name"] == "ranked-whole-pages-fit-v1"
+
+
+def test_ranked_fit_no_page_fits_and_empty_candidates(inputs):
+    from src.evidence import select_page_context
+    doc, _, _ = inputs
+    result = select_page_context(doc, [doc.chunks[0].chunk_id], max_chars=1)
+    assert result["status"] == "over_budget"
+    assert result["selected_pages"] == [] and result["bundle"] is None
+    assert result["delivered_chars"] == 0 and len(result["omitted_pages"]) == 1
+    assert select_page_context(doc, [], max_chars=1)["status"] == "no_results"
+    with pytest.raises(ValueError):
+        select_page_context(doc, [], policy="unknown")

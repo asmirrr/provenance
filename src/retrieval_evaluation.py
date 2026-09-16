@@ -7,7 +7,7 @@ from pathlib import Path
 from src.benchmark import Benchmark, bind_benchmark
 from src import bm25, hybrid
 from src.dense import load_model, runtime_metadata, search_many
-from src.evidence import verify_source_pdf, resolve_evidence
+from src.evidence import verify_source_pdf, select_page_context
 from src.ingestion.pipeline import ProcessedFiling
 
 
@@ -30,20 +30,12 @@ def coverage(item, ranked_ids):
     return output
 
 
-def page_coverage(document, item, ranked_ids, max_chars=8000):
-    """All selected pages must fit; never use labels to choose pages or trim text."""
-    if max_chars < 1:
-        raise ValueError("Context budget must be positive")
-    chunks = {c.chunk_id: c for c in document.chunks}
-    if len(set(ranked_ids)) != len(ranked_ids) or any(cid not in chunks for cid in ranked_ids):
-        raise ValueError("Require unique known retrieved chunk IDs")
-    pages = {p.page: p for p in document.pages}
-    selected_pages = list(dict.fromkeys(chunks[cid].page for cid in ranked_ids))
-    required = sum(len(pages[p].text) for p in selected_pages)
+def page_coverage(document, item, ranked_ids, max_chars=8000, page_policy="strict"):
+    """Select context without labels, then check exact anchored evidence coverage."""
+    selection = select_page_context(document, ranked_ids, max_chars=max_chars, policy=page_policy)
+    bundle = selection["bundle"]
     groups = []
-    bundle = None
-    if ranked_ids and required <= max_chars:
-        bundle = resolve_evidence(document, ranked_ids, context="page", max_chars=max_chars)
+    if bundle:
         for group in item["evidence_groups"]:
             if group["evidence"] and all(any(
                 span["page"] == anchor["page"]
@@ -51,15 +43,11 @@ def page_coverage(document, item, ranked_ids, max_chars=8000):
                 and span["text"][anchor["raw_start"] - span["raw_start"]:anchor["raw_end"] - span["raw_start"]] == anchor["quote"]
                 for span in bundle["spans"]) for anchor in group["evidence"]):
                 groups.append(group["group_id"])
-    status = "over_budget" if required > max_chars else ("ok" if ranked_ids else "no_results")
-    return {"status": status, "selected_pages": selected_pages, "required_chars": required,
-            "delivered_chars": bundle["context_chars"] if bundle else 0,
-            "max_chars": max_chars, "complete_group_ids": groups if item["answerable"] else None,
-            "complete_group": bool(groups) if item["answerable"] else None,
-            "bundle": bundle}
+    return {**selection, "complete_group_ids": groups if item["answerable"] else None,
+            "complete_group": bool(groups) if item["answerable"] else None}
 
 
-def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000):
+def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000, page_policy="strict"):
     if len(runs) != len(bound["items"]):
         raise ValueError("Retrieval run item count mismatch")
     chunks = {c.chunk_id: c.model_dump(mode="json") for c in document.chunks}
@@ -78,7 +66,7 @@ def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000):
             ids.append(cid)
         rows.append({"item_id": item["id"], "category": item["category"],
                      "metrics": coverage(item, ids),
-                     "page_context": {str(k): page_coverage(document, item, ids[:k], max_chars) for k in (1, 3, 5, 10)},
+                     "page_context": {str(k): page_coverage(document, item, ids[:k], max_chars, page_policy) for k in (1, 3, 5, 10)},
                      "retrieval": run})
     measured = [r["metrics"] for r in rows if r["metrics"] is not None]
     supported = [r for r in rows if r["metrics"] is not None]
@@ -88,21 +76,22 @@ def summarize_runs(document, benchmark, bound, runs, retriever, max_chars=8000):
         context[str(k)] = {"complete_group_count": sum(v["complete_group"] for v in values),
                            "answerable_denominator": len(values),
                            "over_budget_count": sum(v["status"] == "over_budget" for v in values),
+                           "requests_with_omissions": sum(bool(v["omitted_pages"]) for v in values),
                            "complete_group_rate": sum(v["complete_group"] for v in values) / len(values) if values else None}
-    return {"schema_version": 2, "retriever": retriever, "benchmark_version": benchmark.version,
+    return {"schema_version": 3, "retriever": retriever, "benchmark_version": benchmark.version,
             "benchmark_model_sha256": bound["benchmark_model_sha256"],
             "document_model_sha256": bound["document_model_sha256"],
             "benchmark_status": benchmark.status,
             "evaluation_status": "draft_diagnostic" if benchmark.status != "human_reviewed" else "reviewed_labels",
             "answerable_denominator": len(measured), "unsupported_excluded": len(rows) - len(measured),
             "aggregate": {key: sum(m[key] for m in measured) / len(measured) for key in measured[0]} if measured else {},
-            "page_context_policy": {"name": "all-selected-pages-or-error-v1", "max_chars": max_chars},
+            "page_context_policy": {"name": "all-selected-pages-or-error-v1" if page_policy == "strict" else "ranked-whole-pages-fit-v1", "max_chars": max_chars},
             "page_context_aggregate": context, "items": rows}
 
 
-def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_draft=False, retriever="dense", max_chars=8000):
-    if max_chars < 1:
-        raise ValueError("Context budget must be positive")
+def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_draft=False, retriever="dense", max_chars=8000, page_policy="strict"):
+    if max_chars < 1 or page_policy not in {"strict", "ranked-fit"}:
+        raise ValueError("Require positive budget and a known page policy")
     if benchmark.status != "human_reviewed" and not allow_draft:
         raise ValueError("Benchmark is pending human review; use --allow-draft for development diagnostics")
     bound = bind_benchmark(document, benchmark)
@@ -115,10 +104,10 @@ def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_d
         runs = hybrid.search_many(document, questions, model, top_k=10, encoding=encoding)
     else:
         raise ValueError("Unknown retriever")
-    return summarize_runs(document, benchmark, bound, runs, retriever, max_chars)
+    return summarize_runs(document, benchmark, bound, runs, retriever, max_chars, page_policy)
 
 
-def replay(document, benchmark, artifact, *, allow_draft=False, max_chars=8000):
+def replay(document, benchmark, artifact, *, allow_draft=False, max_chars=8000, page_policy="strict"):
     if benchmark.status != "human_reviewed" and not allow_draft:
         raise ValueError("Use --allow-draft for pending benchmark labels")
     bound = bind_benchmark(document, benchmark)
@@ -128,7 +117,7 @@ def replay(document, benchmark, artifact, *, allow_draft=False, max_chars=8000):
     if [i["item_id"] for i in artifact["items"]] != [i["id"] for i in bound["items"]]:
         raise ValueError("Saved retrieval item IDs/order mismatch")
     return summarize_runs(document, benchmark, bound, [i["retrieval"] for i in artifact["items"]],
-                          artifact.get("retriever", "dense"), max_chars)
+                          artifact.get("retriever", "dense"), max_chars, page_policy)
 
 
 def main():
@@ -143,6 +132,7 @@ def main():
     parser.add_argument("--source-pdf", type=Path)
     parser.add_argument("--retrieval-run", type=Path, help="Replay saved rankings without model inference")
     parser.add_argument("--max-context-chars", type=int, default=8000)
+    parser.add_argument("--page-policy", choices=["strict", "ranked-fit"], default="strict")
     args = parser.parse_args()
     if args.retrieval_run and (args.retriever or args.encoding or args.local_files_only):
         parser.error("Replay uses saved retrieval settings; omit retriever, encoding and model-loading options")
@@ -167,14 +157,14 @@ def main():
         import hashlib
         data = args.retrieval_run.read_bytes()
         result = replay(document, benchmark, json.loads(data), allow_draft=args.allow_draft,
-                        max_chars=args.max_context_chars)
+                        max_chars=args.max_context_chars, page_policy=args.page_policy)
         result["replayed_from"] = {"path": args.retrieval_run.resolve().as_posix(),
                                    "sha256": hashlib.sha256(data).hexdigest()}
     else:
         model = load_model(args.local_files_only) if args.retriever != "bm25" else None
         result = evaluate(document, benchmark, model, retriever=args.retriever,
                           encoding=args.encoding or "window-mean", allow_draft=args.allow_draft,
-                          max_chars=args.max_context_chars)
+                          max_chars=args.max_context_chars, page_policy=args.page_policy)
         result.update(runtime_metadata() if args.retriever != "bm25" else bm25.runtime_metadata())
     result["source_pdf_verification"] = verification
     args.output.parent.mkdir(parents=True, exist_ok=True)

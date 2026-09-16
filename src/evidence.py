@@ -101,6 +101,46 @@ def resolve_evidence(document: ProcessedFiling, chunk_ids: list[str], *,
     }
 
 
+def select_page_context(document: ProcessedFiling, ranked_ids: list[str], *,
+                        max_chars: int = 8000, policy: str = "ranked-fit") -> dict:
+    """Select whole pages in first-hit order, without access to evidence labels.
+
+    ranked-fit skips a page that cannot fit and continues to later candidates.
+    strict preserves the all-pages-or-error diagnostic policy.
+    """
+    if max_chars < 1 or policy not in {"strict", "ranked-fit"}:
+        raise ValueError("Require positive context budget and a known page policy")
+    validate_document(document)
+    chunks = {c.chunk_id: c for c in document.chunks}
+    if len(set(ranked_ids)) != len(ranked_ids) or any(cid not in chunks for cid in ranked_ids):
+        raise ValueError("Require unique known retrieved chunk IDs")
+    pages = {p.page: p for p in document.pages}
+    first_hits = {}
+    for rank, cid in enumerate(ranked_ids, 1):
+        first_hits.setdefault(chunks[cid].page, rank)
+    required = sum(len(pages[p].text) for p in first_hits)
+    selected, omitted, used = [], [], 0
+    for page, rank in first_hits.items():
+        size = len(pages[page].text)
+        if policy == "strict" and required > max_chars:
+            reason = "whole_request_over_budget"
+        elif size > max_chars - used:
+            reason = "page_exceeds_total_budget" if size > max_chars else "insufficient_remaining_budget"
+        else:
+            selected.append(page)
+            used += size
+            continue
+        omitted.append({"page": page, "first_rank": rank, "page_chars": size,
+                        "remaining_chars": max_chars - used, "reason": reason})
+    selected_ids = [cid for cid in ranked_ids if chunks[cid].page in selected]
+    bundle = resolve_evidence(document, selected_ids, context="page", max_chars=max_chars) if selected_ids else None
+    status = ("no_results" if not ranked_ids else "over_budget" if not selected
+              else "partial" if omitted else "ok")
+    return {"status": status, "policy": policy, "candidate_pages": list(first_hits),
+            "selected_pages": selected, "omitted_pages": omitted, "required_chars": required,
+            "delivered_chars": used, "max_chars": max_chars, "bundle": bundle}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("document", type=Path)
