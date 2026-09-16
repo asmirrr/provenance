@@ -187,7 +187,8 @@ def test_draft_evaluation_requires_explicit_opt_in(document):
         evaluate(document, SimpleNamespace(status="draft_pending_human_review"), None, encoding="window-mean")
 
 
-def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document):
+@pytest.mark.parametrize("retriever", ["dense", "bm25"])
+def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document, retriever):
     from src.benchmark import Benchmark
     from src.retrieval_evaluation import evaluate
     benchmark = Benchmark.model_validate({
@@ -202,7 +203,8 @@ def test_batch_diagnostic_excludes_unsupported_and_keeps_draft_status(document):
              "expected_answer": None, "expected_claims": [], "difficulty": "easy",
              "notes": "Unit fixture", "evidence": []},
         ]})
-    result = evaluate(document, benchmark, WindowModel(), encoding="window-mean", allow_draft=True)
+    result = evaluate(document, benchmark, WindowModel() if retriever == "dense" else None,
+                      encoding="window-mean", allow_draft=True, retriever=retriever)
     assert result["evaluation_status"] == "draft_diagnostic"
     assert result["answerable_denominator"] == 1 and result["unsupported_excluded"] == 1
     assert result["items"][1]["metrics"] is None

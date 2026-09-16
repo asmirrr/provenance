@@ -1,10 +1,11 @@
-"""Batch dense diagnostics against explicit evidence groups, including draft labels."""
+"""Batch retrieval diagnostics against explicit evidence groups, including draft labels."""
 
 import argparse
 import json
 from pathlib import Path
 
 from src.benchmark import Benchmark, bind_benchmark
+from src import bm25
 from src.dense import load_model, runtime_metadata, search_many
 from src.evidence import verify_source_pdf
 from src.ingestion.pipeline import ProcessedFiling
@@ -29,18 +30,24 @@ def coverage(item, ranked_ids):
     return output
 
 
-def evaluate(document, benchmark, model, *, encoding, allow_draft=False):
+def evaluate(document, benchmark, model=None, *, encoding="window-mean", allow_draft=False, retriever="dense"):
     if benchmark.status != "human_reviewed" and not allow_draft:
         raise ValueError("Benchmark is pending human review; use --allow-draft for development diagnostics")
     bound = bind_benchmark(document, benchmark)
-    runs = search_many(document, [i.question for i in benchmark.items], model, top_k=10, encoding=encoding)
+    questions = [i.question for i in benchmark.items]
+    if retriever == "bm25":
+        runs = bm25.search_many(document, questions, top_k=10)
+    elif retriever == "dense":
+        runs = search_many(document, questions, model, top_k=10, encoding=encoding)
+    else:
+        raise ValueError("Unknown retriever")
     rows = []
     for item, run in zip(bound["items"], runs, strict=True):
         rows.append({"item_id": item["id"], "category": item["category"],
                      "metrics": coverage(item, [r["chunk"]["chunk_id"] for r in run["results"]]),
                      "retrieval": run})
     measured = [r["metrics"] for r in rows if r["metrics"] is not None]
-    return {"schema_version": 1, "benchmark_version": benchmark.version,
+    return {"schema_version": 1, "retriever": retriever, "benchmark_version": benchmark.version,
             "benchmark_model_sha256": bound["benchmark_model_sha256"],
             "document_model_sha256": bound["document_model_sha256"],
             "benchmark_status": benchmark.status,
@@ -55,11 +62,14 @@ def main():
     parser.add_argument("document", type=Path)
     parser.add_argument("benchmark", type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--encoding", choices=["prefix", "window-mean"], default="window-mean")
+    parser.add_argument("--retriever", choices=["dense", "bm25"], default="dense")
+    parser.add_argument("--encoding", choices=["prefix", "window-mean"])
     parser.add_argument("--allow-draft", action="store_true")
     parser.add_argument("--local-files-only", action="store_true")
     parser.add_argument("--source-pdf", type=Path)
     args = parser.parse_args()
+    if args.retriever == "bm25" and (args.encoding or args.local_files_only):
+        parser.error("Encoding and model-loading options apply only to dense retrieval")
     inputs = [args.document, args.benchmark] + ([args.source_pdf] if args.source_pdf else [])
     if args.output.resolve() in {p.resolve() for p in inputs}:
         parser.error("Output must not overwrite an input")
@@ -70,9 +80,10 @@ def main():
     # Validate source anchors before model loading or output writes.
     bind_benchmark(document, benchmark)
     verification = verify_source_pdf(document, args.source_pdf) if args.source_pdf else {"status": "not_checked"}
-    result = evaluate(document, benchmark, load_model(args.local_files_only),
-                      encoding=args.encoding, allow_draft=args.allow_draft)
-    result.update(runtime_metadata())
+    model = load_model(args.local_files_only) if args.retriever == "dense" else None
+    result = evaluate(document, benchmark, model, retriever=args.retriever,
+                      encoding=args.encoding or "window-mean", allow_draft=args.allow_draft)
+    result.update(runtime_metadata() if args.retriever == "dense" else bm25.runtime_metadata())
     result["source_pdf_verification"] = verification
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")

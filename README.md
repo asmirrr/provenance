@@ -3,7 +3,7 @@
 Traceable financial intelligence, built from source evidence upward. The current
 milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
 chunks, with an offline evidence-context diagnostic set and a first dense retrieval
-baseline. LLM generation and claim verification are not implemented.
+baseline plus a BM25 lexical baseline. LLM generation and claim verification are not implemented.
 
 ## Run locally (PowerShell)
 
@@ -369,7 +369,66 @@ It **did not improve these draft-label metrics**. Its top-10 incomplete cases we
 plus restricted-cash footnote). This is evidence to inspect pooling and financial
 context failures, not a reason to assume truncation is generally superior.
 
-Next: review those retrieved passages and alternative labels with the source,
-complete human benchmark review, then compare BM25 against the same fixed corpus
-and diagnostic protocol before adding hybrid retrieval. Avoid tuning solely to
-these small, overlapping development cases.
+These failures motivated the BM25 comparison below, using the same fixed corpus
+and diagnostic protocol. Human benchmark review remains outstanding. Avoid tuning
+solely to these small, overlapping development cases.
+
+## BM25 lexical baseline
+
+`src.bm25` searches full chunk text locally without a model download or additional
+dependencies. It builds one in-memory index per batch. Scores use term-frequency
+saturation and document-length normalization from the
+[BM25 formulation](https://nlp.stanford.edu/IR-book/html/htmledition/okapi-bm25-a-non-binary-model-1.html),
+with fixed `k1=1.2`, `b=0.75` and positive smoothed IDF
+`log(1 + (N - df + 0.5)/(df + 0.5))`. Parameters were not tuned to these questions.
+
+The versioned `words-numeric-v1` tokenizer casefolds words, retains years and decimal
+numbers, and removes grouping commas (`391,035` matches `391035`). It uses no stop
+list, stemming, synonyms, or units conversion. Signs, parentheses and percent symbols
+are not indexed: this is term matching, not financial-number interpretation. Original
+citation text remains unchanged. Repeated query terms count once. Equal scores are
+ordered by chunk ID, and zero-overlap chunks are excluded rather than padding top-k.
+An empty result is not proof that a question is unanswerable.
+
+```powershell
+uv run python -m src.bm25 data/processed/aapl-2024-10k.json "How much cash did Apple pay for income taxes, net, in fiscal 2024?" --top-k 10 --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/bm25-cash-tax.json
+uv run python -m src.retrieval_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --retriever bm25 --allow-draft --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/bm25-diagnostic.json
+```
+
+The common evaluator uses the same questions, evidence groups and denominators as
+the dense runs. BM25 does not load the dense model. Artifacts record tokenizer and
+scoring settings, query tokens, full ranked chunks, scores, hashes and timings.
+BM25 scores are not cosine similarities or calibrated probabilities; they cannot
+be added to dense scores without an explicit combination policy.
+
+All three development runs have matching corpus and benchmark model hashes:
+
+| Diagnostic (23 answerable draft questions) | Dense prefix | Dense window mean | BM25 |
+| --- | ---: | ---: | ---: |
+| Complete group @1 | 11/23 | 9/23 | 9/23 |
+| Complete group @3 | 14/23 | 14/23 | 15/23 |
+| Complete group @5 | 17/23 | 15/23 | 19/23 |
+| Complete group @10 | 21/23 | 20/23 | 23/23 |
+| MRR @10, first annotated chunk | 0.655 | 0.611 | 0.643 |
+
+Inspecting the earlier window-encoding failures:
+
+- `aapl24-007`: the selected balance-sheet cash evidence on PDF page 34 is absent
+  from dense-window top 10; BM25 finds it at rank 10. Its higher-ranked Note 4
+  cash tables must not be assumed interchangeable with the balance-sheet figure.
+- `aapl24-009`: the tax-payment row is separate from its table header. Dense-window
+  retrieves only one required chunk; BM25 retrieves both page-36 chunks at ranks
+  2 and 7. One relevant chunk alone still does not complete this evidence group.
+- `aapl24-027`: dense-window finds the restriction footnote on page 40 but misses
+  the page-39 table. BM25 retrieves the selected two chunks at ranks 2 and 5.
+
+The observed BM25 index build took about 29 ms and the first query about 1 ms on
+this machine; these are single-run timings, not performance benchmarks. The 23/23
+result measures coverage of selected draft evidence on a small development set,
+not answer accuracy, exhaustive relevance, or generalization. All 28 questions
+remain pending human review, and the five unsupported questions are excluded from
+these aggregates.
+
+Next: review source labels with a human and run a fixed, explicitly documented
+hybrid combination against these baselines. Inspect rank-1 regressions as well as
+top-10 coverage before considering reranking or generation.
