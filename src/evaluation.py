@@ -1,6 +1,7 @@
 """Offline evidence-context diagnostics; this does not measure answer accuracy."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -8,6 +9,68 @@ from pydantic import BaseModel, Field
 
 from src.ingestion.pipeline import ProcessedFiling
 from src.evidence import resolve_evidence, validate_document
+from src.benchmark import Benchmark, bind_benchmark
+
+
+def evaluate_benchmark(document: ProcessedFiling, benchmark: Benchmark) -> dict:
+    """Expand each explicit evidence group into a context case, without retrieval.
+
+    Alternative support paths are separate cases, not independent questions.
+    Ground-truth mappings are draft annotations until reviewed by a human.
+    """
+    bound = bind_benchmark(document, benchmark)
+    rows = []
+    for item in bound["items"]:
+        for group in item["evidence_groups"]:
+            anchors = group["evidence"]
+            ids = group["supporting_chunk_ids"]
+            target = anchors[-1]
+            target_ids = target["chunk_ids"]
+            def contains(bundle):
+                return all(any(s["page"] == a["page"] and s["raw_start"] <= a["raw_start"]
+                               and s["raw_end"] >= a["raw_end"] for s in bundle["spans"])
+                           for a in anchors)
+            try:
+                target_complete = contains(resolve_evidence(document, target_ids, context="page", max_chars=8000))
+            except ValueError:
+                target_complete = False
+            try:
+                bundle = resolve_evidence(document, ids, context="page", max_chars=8000)
+                explicit_complete, error = contains(bundle), None
+            except ValueError as exc:
+                explicit_complete, error = False, str(exc)
+            single = [c.chunk_id for c in document.chunks if all(
+                c.page == a["page"] and c.raw_start <= a["raw_start"] and c.raw_end >= a["raw_end"]
+                for a in anchors)]
+            rows.append({"case_id": f"{item['id']}:{group['group_id']}", "item_id": item["id"],
+                         "group_id": group["group_id"], "question": item["question"],
+                         "expected_answer": item["expected_answer"], "review_status": item["review_status"],
+                         "supporting_pages": group["supporting_pages"], "supporting_chunk_ids": ids,
+                         "evidence": anchors, "single_chunk_complete": bool(single),
+                         "complete_chunk_ids": single,
+                         "target_page_complete": target_complete,
+                         "explicit_pages_complete": explicit_complete,
+                         "page_context_chars": group["page_context_chars"], "context_error": error})
+    # Exclude local source paths so the same PDF/configuration can reproduce this on another machine.
+    corpus = {"source_sha256": document.source_sha256, "metadata": document.metadata.model_dump(mode="json"),
+              "extractor": document.extractor, "chunking": document.chunking, "max_chars": document.max_chars,
+              "pages": [p.model_dump() for p in document.pages],
+              "chunks": [c.model_dump(exclude={"source_path"}) for c in document.chunks]}
+    return {"diagnostic_version": "2.0.0", "benchmark_version": benchmark.version,
+            "benchmark_model_sha256": bound["benchmark_model_sha256"],
+            "corpus_sha256": hashlib.sha256(json.dumps(corpus, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
+            "source_sha256": document.source_sha256, "extractor": document.extractor,
+            "chunking": document.chunking, "max_chars": document.max_chars,
+            "page_count": len(document.pages), "chunk_count": len(document.chunks),
+            "benchmark_status": benchmark.status, "question_count": len(benchmark.items),
+            "answerable_question_count": bound["answerable_count"], "case_count": len(rows),
+            "unsupported_item_ids": [i.id for i in benchmark.items if not i.answerable],
+            "single_chunk_complete": sum(r["single_chunk_complete"] for r in rows),
+            "target_page_complete": sum(r["target_page_complete"] for r in rows),
+            "explicit_pages_complete": sum(r["explicit_pages_complete"] for r in rows),
+            "context_max_chars": 8000,
+            "interpretation": "Oracle-selected context availability, not retrieval or answer accuracy. Alternative groups are separate cases. Human review pending for draft labels.",
+            "results": rows}
 
 
 class EvidenceCase(BaseModel):
@@ -97,12 +160,13 @@ def main():
     parser.add_argument("document", type=Path)
     parser.add_argument("cases", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--benchmark", action="store_true", help="Use versioned benchmark evidence groups as context cases")
     args = parser.parse_args()
     if args.output and args.output.resolve() in {args.document.resolve(), args.cases.resolve()}:
         parser.error("Output must not overwrite the document or evaluation cases")
     document = ProcessedFiling.model_validate_json(args.document.read_text(encoding="utf-8"))
-    cases = EvidenceCases.model_validate_json(args.cases.read_text(encoding="utf-8"))
-    report = json.dumps(evaluate(document, cases), ensure_ascii=False, indent=2)
+    cases = (Benchmark if args.benchmark else EvidenceCases).model_validate_json(args.cases.read_text(encoding="utf-8"))
+    report = json.dumps((evaluate_benchmark if args.benchmark else evaluate)(document, cases), ensure_ascii=False, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(report, encoding="utf-8")

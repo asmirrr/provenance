@@ -1,0 +1,1844 @@
+{
+  "diagnostic_version": "2.0.0",
+  "benchmark_version": "0.3.0",
+  "benchmark_model_sha256": "bcb409cb1bc62d0279db2a30409e7fbbf73390013cff6041ea06b6222f1f5935",
+  "corpus_sha256": "e616bafd916dac07745d6704096ebdb2fb79f839ffc7e386855454b693f51137",
+  "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
+  "extractor": "pdfplumber 0.11.10",
+  "chunking": "sentence-v2",
+  "max_chars": 1800,
+  "page_count": 121,
+  "chunk_count": 314,
+  "benchmark_status": "draft_pending_human_review",
+  "question_count": 28,
+  "answerable_question_count": 23,
+  "case_count": 35,
+  "unsupported_item_ids": [
+    "aapl24-021",
+    "aapl24-022",
+    "aapl24-023",
+    "aapl24-024",
+    "aapl24-025"
+  ],
+  "single_chunk_complete": 27,
+  "target_page_complete": 30,
+  "explicit_pages_complete": 35,
+  "context_max_chars": 8000,
+  "interpretation": "Oracle-selected context availability, not retrieval or answer accuracy. Alternative groups are separate cases. Human review pending for draft labels.",
+  "results": [
+    {
+      "case_id": "aapl24-001:primary",
+      "item_id": "aapl24-001",
+      "group_id": "primary",
+      "question": "What were Apple's total net sales in fiscal 2024?",
+      "expected_answer": "$391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Total net sales 391,035 383,285 394,328",
+          "printed_page": 29,
+          "raw_start": 294,
+          "raw_end": 333,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-001:alternative-1",
+      "item_id": "aapl24-001",
+      "group_id": "alternative-1",
+      "question": "What were Apple's total net sales in fiscal 2024?",
+      "expected_answer": "$391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        26
+      ],
+      "supporting_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "evidence": [
+        {
+          "page": 26,
+          "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 23,
+          "raw_start": 34,
+          "raw_end": 157,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 26,
+          "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328",
+          "printed_page": 23,
+          "raw_start": 387,
+          "raw_end": 442,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1263,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-001:alternative-2",
+      "item_id": "aapl24-001",
+      "group_id": "alternative-2",
+      "question": "What were Apple's total net sales in fiscal 2024?",
+      "expected_answer": "$391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        25
+      ],
+      "supporting_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "evidence": [
+        {
+          "page": 25,
+          "quote": "The following table shows net sales by reportable segment for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 22,
+          "raw_start": 30,
+          "raw_end": 163,
+          "chunk_ids": [
+            "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 25,
+          "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328",
+          "printed_page": 22,
+          "raw_start": 386,
+          "raw_end": 441,
+          "chunk_ids": [
+            "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1467,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-002:primary",
+      "item_id": "aapl24-002",
+      "group_id": "primary",
+      "question": "What was Apple's net income in fiscal 2024?",
+      "expected_answer": "$93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Net income $ 93,736 $ 96,995 $ 99,803",
+          "printed_page": 29,
+          "raw_start": 860,
+          "raw_end": 897,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-002:alternative-1",
+      "item_id": "aapl24-002",
+      "group_id": "alternative-1",
+      "question": "What was Apple's net income in fiscal 2024?",
+      "expected_answer": "$93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        36
+      ],
+      "supporting_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "evidence": [
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Net income 93,736 96,995 99,803",
+          "printed_page": 33,
+          "raw_start": 266,
+          "raw_end": 297,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2195,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-002:alternative-2",
+      "item_id": "aapl24-002",
+      "group_id": "alternative-2",
+      "question": "What was Apple's net income in fiscal 2024?",
+      "expected_answer": "$93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39
+      ],
+      "supporting_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022",
+          "printed_page": 36,
+          "raw_start": 677,
+          "raw_end": 847,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "Net income $ 93,736 $ 96,995 $ 99,803",
+          "printed_page": 36,
+          "raw_start": 859,
+          "raw_end": 896,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2621,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-003:primary",
+      "item_id": "aapl24-003",
+      "group_id": "primary",
+      "question": "What was Apple's diluted earnings per share in fiscal 2024?",
+      "expected_answer": "$6.08 per share.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Diluted $ 6.08 $ 6.13 $ 6.11",
+          "printed_page": 29,
+          "raw_start": 945,
+          "raw_end": 973,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-003:alternative-1",
+      "item_id": "aapl24-003",
+      "group_id": "alternative-1",
+      "question": "What was Apple's diluted earnings per share in fiscal 2024?",
+      "expected_answer": "$6.08 per share.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39
+      ],
+      "supporting_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022",
+          "printed_page": 36,
+          "raw_start": 677,
+          "raw_end": 847,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "Diluted earnings per share $ 6.08 $ 6.13 $ 6.11",
+          "printed_page": 36,
+          "raw_start": 1156,
+          "raw_end": 1203,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2621,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-004:primary",
+      "item_id": "aapl24-004",
+      "group_id": "primary",
+      "question": "How did Apple's net income change from fiscal 2023 to fiscal 2024, in dollars?",
+      "expected_answer": "Net income decreased by $3,259 million, from $96,995 million to $93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Net income $ 93,736 $ 96,995 $ 99,803",
+          "printed_page": 29,
+          "raw_start": 860,
+          "raw_end": 897,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-004:alternative-1",
+      "item_id": "aapl24-004",
+      "group_id": "alternative-1",
+      "question": "How did Apple's net income change from fiscal 2023 to fiscal 2024, in dollars?",
+      "expected_answer": "Net income decreased by $3,259 million, from $96,995 million to $93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        36
+      ],
+      "supporting_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "evidence": [
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Net income 93,736 96,995 99,803",
+          "printed_page": 33,
+          "raw_start": 266,
+          "raw_end": 297,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2195,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-004:alternative-2",
+      "item_id": "aapl24-004",
+      "group_id": "alternative-2",
+      "question": "How did Apple's net income change from fiscal 2023 to fiscal 2024, in dollars?",
+      "expected_answer": "Net income decreased by $3,259 million, from $96,995 million to $93,736 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39
+      ],
+      "supporting_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "The following table shows the computation of basic and diluted earnings per share for 2024, 2023 and 2022 (net income in\nmillions and shares in thousands):\n2024 2023 2022",
+          "printed_page": 36,
+          "raw_start": 677,
+          "raw_end": 847,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "Net income $ 93,736 $ 96,995 $ 99,803",
+          "printed_page": 36,
+          "raw_start": 859,
+          "raw_end": 896,
+          "chunk_ids": [
+            "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "fcfba37a3b2e4b25fcc2ac4c7bc186563722d0f145bac64cfb13d3a1f3f0dd7b"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2621,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-005:primary",
+      "item_id": "aapl24-005",
+      "group_id": "primary",
+      "question": "How much did Apple spend on research and development in fiscal 2024?",
+      "expected_answer": "$31,370 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Research and development 31,370 29,915 26,251",
+          "printed_page": 29,
+          "raw_start": 513,
+          "raw_end": 558,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-005:alternative-1",
+      "item_id": "aapl24-005",
+      "group_id": "alternative-1",
+      "question": "How much did Apple spend on research and development in fiscal 2024?",
+      "expected_answer": "$31,370 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        27
+      ],
+      "supporting_chunk_ids": [
+        "981914d8af7ecabfbde206894470226a1d408d7ebacefc3654ccd04af6b1daa4"
+      ],
+      "evidence": [
+        {
+          "page": 27,
+          "quote": "Operating expenses for 2024, 2023 and 2022 were as follows (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 24,
+          "raw_start": 1192,
+          "raw_end": 1302,
+          "chunk_ids": [
+            "981914d8af7ecabfbde206894470226a1d408d7ebacefc3654ccd04af6b1daa4"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 27,
+          "quote": "Research and development $ 31,370 5 % $ 29,915 14 % $ 26,251",
+          "printed_page": 24,
+          "raw_start": 1303,
+          "raw_end": 1363,
+          "chunk_ids": [
+            "981914d8af7ecabfbde206894470226a1d408d7ebacefc3654ccd04af6b1daa4"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "981914d8af7ecabfbde206894470226a1d408d7ebacefc3654ccd04af6b1daa4"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1894,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-006:primary",
+      "item_id": "aapl24-006",
+      "group_id": "primary",
+      "question": "What were Apple's total assets as of September 28, 2024?",
+      "expected_answer": "$364,980 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        34
+      ],
+      "supporting_chunk_ids": [
+        "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+      ],
+      "evidence": [
+        {
+          "page": 34,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and par value)\nSeptember 28, September 30,\n2024 2023",
+          "printed_page": 31,
+          "raw_start": 39,
+          "raw_end": 164,
+          "chunk_ids": [
+            "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 34,
+          "quote": "Total assets $ 364,980 $ 352,583",
+          "printed_page": 31,
+          "raw_start": 633,
+          "raw_end": 665,
+          "chunk_ids": [
+            "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1580,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-007:primary",
+      "item_id": "aapl24-007",
+      "group_id": "primary",
+      "question": "What were Apple's cash and cash equivalents as of September 28, 2024?",
+      "expected_answer": "$29,943 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        34
+      ],
+      "supporting_chunk_ids": [
+        "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+      ],
+      "evidence": [
+        {
+          "page": 34,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and par value)\nSeptember 28, September 30,\n2024 2023",
+          "printed_page": 31,
+          "raw_start": 39,
+          "raw_end": 164,
+          "chunk_ids": [
+            "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 34,
+          "quote": "Cash and cash equivalents $ 29,943 $ 29,965",
+          "printed_page": 31,
+          "raw_start": 189,
+          "raw_end": 232,
+          "chunk_ids": [
+            "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "6d2d972ccb0ebe8272516239e35c2649ced5a2a788c880ea0dedaa6f29200389"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1580,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-008:primary",
+      "item_id": "aapl24-008",
+      "group_id": "primary",
+      "question": "How much cash did Apple generate from operating activities in fiscal 2024?",
+      "expected_answer": "$118,254 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        36
+      ],
+      "supporting_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "evidence": [
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Cash generated by operating activities 118,254 110,543 122,151",
+          "printed_page": 33,
+          "raw_start": 848,
+          "raw_end": 910,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2195,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-009:primary",
+      "item_id": "aapl24-009",
+      "group_id": "primary",
+      "question": "How much cash did Apple pay for income taxes, net, in fiscal 2024?",
+      "expected_answer": "$26,102 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        36
+      ],
+      "supporting_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1",
+        "d1548dced249295422ae1b9817c9a680099395017a43a83b7be256719df6f9d1"
+      ],
+      "evidence": [
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Cash paid for income taxes, net $ 26,102 $ 18,679 $ 19,573",
+          "printed_page": 33,
+          "raw_start": 2076,
+          "raw_end": 2134,
+          "chunk_ids": [
+            "d1548dced249295422ae1b9817c9a680099395017a43a83b7be256719df6f9d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2195,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-010:primary",
+      "item_id": "aapl24-010",
+      "group_id": "primary",
+      "question": "What were Services net sales in fiscal 2024, and what year-over-year growth percentage did Apple report?",
+      "expected_answer": "$96,169 million, up 13% from fiscal 2023.",
+      "review_status": "pending",
+      "supporting_pages": [
+        26
+      ],
+      "supporting_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "evidence": [
+        {
+          "page": 26,
+          "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 23,
+          "raw_start": 34,
+          "raw_end": 157,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 26,
+          "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129",
+          "printed_page": 23,
+          "raw_start": 344,
+          "raw_end": 386,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1263,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-011:primary",
+      "item_id": "aapl24-011",
+      "group_id": "primary",
+      "question": "Did Greater China net sales rise by 8% in fiscal 2024?",
+      "expected_answer": "No. Greater China net sales decreased 8%, to $66,952 million from $72,559 million in fiscal 2023.",
+      "review_status": "pending",
+      "supporting_pages": [
+        25
+      ],
+      "supporting_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "evidence": [
+        {
+          "page": 25,
+          "quote": "The following table shows net sales by reportable segment for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 22,
+          "raw_start": 30,
+          "raw_end": 163,
+          "chunk_ids": [
+            "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 25,
+          "quote": "Greater China 66,952 (8) % 72,559 (2) % 74,200",
+          "printed_page": 22,
+          "raw_start": 252,
+          "raw_end": 298,
+          "chunk_ids": [
+            "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1467,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-012:primary",
+      "item_id": "aapl24-012",
+      "group_id": "primary",
+      "question": "According to Item 7, why did Greater China net sales decline in fiscal 2024?",
+      "expected_answer": "Primarily because of lower iPhone and iPad net sales; renminbi weakness against the U.S. dollar also had an unfavorable year-over-year impact.",
+      "review_status": "pending",
+      "supporting_pages": [
+        25
+      ],
+      "supporting_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "evidence": [
+        {
+          "page": 25,
+          "quote": "Greater China net sales decreased during 2024 compared to 2023 due primarily to lower net sales of iPhone and iPad. The\nweakness in the renminbi relative to the U.S. dollar had an unfavorable year-over-year impact on Greater China net sales during\n2024.",
+          "printed_page": 22,
+          "raw_start": 691,
+          "raw_end": 944,
+          "chunk_ids": [
+            "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "82d429c9c4439402c9410a76d56d7ceef2ab64a4a0ccfefa23125910b2685d7f"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1467,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-013:primary",
+      "item_id": "aapl24-013",
+      "group_id": "primary",
+      "question": "Were Apple's fiscal years 2024 and 2023 both 52 weeks long?",
+      "expected_answer": "No. Fiscal 2024 spanned 52 weeks, while fiscal 2023 spanned 53 weeks.",
+      "review_status": "pending",
+      "supporting_pages": [
+        24
+      ],
+      "supporting_chunk_ids": [
+        "5c7f598b38d30d2ef4013d81db794c20cfd45abdd55a09821abdd3db6c0f6332",
+        "36fc130c179be60f90e35231659f83abeb1d903e05def74b5f9e5b869c6aa786"
+      ],
+      "evidence": [
+        {
+          "page": 24,
+          "quote": "occurred in the first quarter of 2023. The Company’s fiscal years 2024 and 2022 spanned 52 weeks each, whereas fiscal year\n2023 spanned 53 weeks.",
+          "printed_page": 21,
+          "raw_start": 1682,
+          "raw_end": 1827,
+          "chunk_ids": [
+            "5c7f598b38d30d2ef4013d81db794c20cfd45abdd55a09821abdd3db6c0f6332",
+            "36fc130c179be60f90e35231659f83abeb1d903e05def74b5f9e5b869c6aa786"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2084,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-014:primary",
+      "item_id": "aapl24-014",
+      "group_id": "primary",
+      "question": "During which fiscal 2024 quarter did Apple announce the iPhone 16 lineup?",
+      "expected_answer": "The fourth quarter of fiscal 2024.",
+      "review_status": "pending",
+      "supporting_pages": [
+        24
+      ],
+      "supporting_chunk_ids": [
+        "5c7f598b38d30d2ef4013d81db794c20cfd45abdd55a09821abdd3db6c0f6332"
+      ],
+      "evidence": [
+        {
+          "page": 24,
+          "quote": "Fourth Quarter 2024:\n• iPhone 16, iPhone 16 Plus, iPhone 16 Pro and iPhone 16 Pro Max;",
+          "printed_page": 21,
+          "raw_start": 1285,
+          "raw_end": 1371,
+          "chunk_ids": [
+            "5c7f598b38d30d2ef4013d81db794c20cfd45abdd55a09821abdd3db6c0f6332"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "5c7f598b38d30d2ef4013d81db794c20cfd45abdd55a09821abdd3db6c0f6332"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2084,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-015:primary",
+      "item_id": "aapl24-015",
+      "group_id": "primary",
+      "question": "When does Apple's fiscal year end under the calendar described in Item 1?",
+      "expected_answer": "On the last Saturday of September; the fiscal year spans 52 or 53 weeks.",
+      "review_status": "pending",
+      "supporting_pages": [
+        4
+      ],
+      "supporting_chunk_ids": [
+        "6a1b2d10542ca558cecd83db86b0c5aabb9018abdb803ebe5799c47381d8e046"
+      ],
+      "evidence": [
+        {
+          "page": 4,
+          "quote": "sells a variety of related services. The Company’s fiscal year is the 52- or 53-week period that ends on the last Saturday of\nSeptember.",
+          "printed_page": 1,
+          "raw_start": 2147,
+          "raw_end": 2283,
+          "chunk_ids": [
+            "6a1b2d10542ca558cecd83db86b0c5aabb9018abdb803ebe5799c47381d8e046"
+          ],
+          "sections": [
+            "Item 1. Business"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "6a1b2d10542ca558cecd83db86b0c5aabb9018abdb803ebe5799c47381d8e046"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 3557,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-016:primary",
+      "item_id": "aapl24-016",
+      "group_id": "primary",
+      "question": "Which reportable segment includes India, according to Note 13?",
+      "expected_answer": "Europe.",
+      "review_status": "pending",
+      "supporting_pages": [
+        49
+      ],
+      "supporting_chunk_ids": [
+        "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+      ],
+      "evidence": [
+        {
+          "page": 49,
+          "quote": "Americas, Europe, Greater China, Japan and Rest of Asia Pacific. Americas includes both North and South America. Europe\nincludes European countries, as well as India, the Middle East and Africa. Greater China includes China mainland, Hong Kong\nand Taiwan.",
+          "printed_page": 46,
+          "raw_start": 2048,
+          "raw_end": 2303,
+          "chunk_ids": [
+            "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 3304,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-017:primary",
+      "item_id": "aapl24-017",
+      "group_id": "primary",
+      "question": "Which countries or territories make up Greater China in Apple's segment definition?",
+      "expected_answer": "China mainland, Hong Kong and Taiwan.",
+      "review_status": "pending",
+      "supporting_pages": [
+        49
+      ],
+      "supporting_chunk_ids": [
+        "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+      ],
+      "evidence": [
+        {
+          "page": 49,
+          "quote": "includes European countries, as well as India, the Middle East and Africa. Greater China includes China mainland, Hong Kong\nand Taiwan.",
+          "printed_page": 46,
+          "raw_start": 2168,
+          "raw_end": 2303,
+          "chunk_ids": [
+            "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "f3335a6a60862a539d42d9b5ba1f4de0f72caf9000bcc74bedeaa77b1bc48b73"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 3304,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-017:alternative-1",
+      "item_id": "aapl24-017",
+      "group_id": "alternative-1",
+      "question": "Which countries or territories make up Greater China in Apple's segment definition?",
+      "expected_answer": "China mainland, Hong Kong and Taiwan.",
+      "review_status": "pending",
+      "supporting_pages": [
+        5
+      ],
+      "supporting_chunk_ids": [
+        "a67bc543d0a63d74e6ad036b0a5f6ee54f360a4590fe4228802dc96d35f9f3d4",
+        "687124a3b48ee7f75505b6f28ff3865ae3fac7f9fc8b12fe668b3628df7f721c"
+      ],
+      "evidence": [
+        {
+          "page": 5,
+          "quote": "includes European countries, as well as India, the Middle East and Africa. Greater China includes China mainland, Hong Kong\nand Taiwan.",
+          "printed_page": 2,
+          "raw_start": 1722,
+          "raw_end": 1857,
+          "chunk_ids": [
+            "a67bc543d0a63d74e6ad036b0a5f6ee54f360a4590fe4228802dc96d35f9f3d4",
+            "687124a3b48ee7f75505b6f28ff3865ae3fac7f9fc8b12fe668b3628df7f721c"
+          ],
+          "sections": [
+            "Item 1. Business"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 3599,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-018:primary",
+      "item_id": "aapl24-018",
+      "group_id": "primary",
+      "question": "Was Apple's fiscal 2024 operating cash flow greater than net income, and by how much?",
+      "expected_answer": "Yes. Operating cash flow was $118,254 million versus net income of $93,736 million, a difference of $24,518 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        36
+      ],
+      "supporting_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "evidence": [
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Net income 93,736 96,995 99,803",
+          "printed_page": 33,
+          "raw_start": 266,
+          "raw_end": 297,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Cash generated by operating activities 118,254 110,543 122,151",
+          "printed_page": 33,
+          "raw_start": 848,
+          "raw_end": 910,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2195,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-018:alternative-1",
+      "item_id": "aapl24-018",
+      "group_id": "alternative-1",
+      "question": "Was Apple's fiscal 2024 operating cash flow greater than net income, and by how much?",
+      "expected_answer": "Yes. Operating cash flow was $118,254 million versus net income of $93,736 million, a difference of $24,518 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32,
+        36
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1",
+        "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Net income $ 93,736 $ 96,995 $ 99,803",
+          "printed_page": 29,
+          "raw_start": 860,
+          "raw_end": 897,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "(In millions)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 33,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 36,
+          "quote": "Cash generated by operating activities 118,254 110,543 122,151",
+          "printed_page": 33,
+          "raw_start": 848,
+          "raw_end": 910,
+          "chunk_ids": [
+            "ad3cbecb6079c73c4286711e135e42ef4ca4bdbd7923391b317fc477a225cae1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": false,
+      "explicit_pages_complete": true,
+      "page_context_chars": 3354,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-019:primary",
+      "item_id": "aapl24-019",
+      "group_id": "primary",
+      "question": "What percentage of Apple's fiscal 2024 total net sales came from Services, rounded to one decimal place?",
+      "expected_answer": "Approximately 24.6%, using Services net sales of $96,169 million and total net sales of $391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        32
+      ],
+      "supporting_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Services 96,169 85,200 78,129",
+          "printed_page": 29,
+          "raw_start": 264,
+          "raw_end": 293,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Total net sales 391,035 383,285 394,328",
+          "printed_page": 29,
+          "raw_start": 294,
+          "raw_end": 333,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-019:alternative-1",
+      "item_id": "aapl24-019",
+      "group_id": "alternative-1",
+      "question": "What percentage of Apple's fiscal 2024 total net sales came from Services, rounded to one decimal place?",
+      "expected_answer": "Approximately 24.6%, using Services net sales of $96,169 million and total net sales of $391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        26
+      ],
+      "supporting_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "evidence": [
+        {
+          "page": 26,
+          "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 23,
+          "raw_start": 34,
+          "raw_end": 157,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 26,
+          "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129",
+          "printed_page": 23,
+          "raw_start": 344,
+          "raw_end": 386,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 26,
+          "quote": "Total net sales $ 391,035 2 % $ 383,285 (3) % $ 394,328",
+          "printed_page": 23,
+          "raw_start": 387,
+          "raw_end": 442,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1263,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-019:alternative-2",
+      "item_id": "aapl24-019",
+      "group_id": "alternative-2",
+      "question": "What percentage of Apple's fiscal 2024 total net sales came from Services, rounded to one decimal place?",
+      "expected_answer": "Approximately 24.6%, using Services net sales of $96,169 million and total net sales of $391,035 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        26,
+        32
+      ],
+      "supporting_chunk_ids": [
+        "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d",
+        "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+      ],
+      "evidence": [
+        {
+          "page": 26,
+          "quote": "The following table shows net sales by category for 2024, 2023 and 2022 (dollars in millions):\n2024 Change 2023 Change 2022",
+          "printed_page": 23,
+          "raw_start": 34,
+          "raw_end": 157,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 26,
+          "quote": "Services (1) 96,169 13 % 85,200 9 % 78,129",
+          "printed_page": 23,
+          "raw_start": 344,
+          "raw_end": 386,
+          "chunk_ids": [
+            "0fc133c6eea6fc1396e12f9fd47cfd9696520926e5b9df6d77e867c2b7651e5d"
+          ],
+          "sections": [
+            "Item 7. Management’s Discussion and Analysis of Financial Condition and Results of Operations"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 28, September 30, September 24,\n2024 2023 2022",
+          "printed_page": 29,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 32,
+          "quote": "Total net sales 391,035 383,285 394,328",
+          "printed_page": 29,
+          "raw_start": 294,
+          "raw_end": 333,
+          "chunk_ids": [
+            "10d144a9e47d17ba3a86bcd76959d6852c2e715f6876a9ac712990e4055598d1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": false,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2422,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-020:primary",
+      "item_id": "aapl24-020",
+      "group_id": "primary",
+      "question": "What were the weighted-average commercial paper interest rates at September 28, 2024 and September 30, 2023?",
+      "expected_answer": "5.00% and 5.28%, respectively.",
+      "review_status": "pending",
+      "supporting_pages": [
+        46
+      ],
+      "supporting_chunk_ids": [
+        "c99046d3f4dfeb8e91e16b099c0818f42f7b93be8fddff20d3d8f4923f4fe3ae"
+      ],
+      "evidence": [
+        {
+          "page": 46,
+          "quote": "respectively, with maturities generally less than nine months. The weighted-average interest rate of the Company’s commercial\npaper was 5.00% and 5.28% as of September 28, 2024 and September 30, 2023, respectively.",
+          "printed_page": 43,
+          "raw_start": 396,
+          "raw_end": 610,
+          "chunk_ids": [
+            "c99046d3f4dfeb8e91e16b099c0818f42f7b93be8fddff20d3d8f4923f4fe3ae"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "c99046d3f4dfeb8e91e16b099c0818f42f7b93be8fddff20d3d8f4923f4fe3ae"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2780,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-026:primary",
+      "item_id": "aapl24-026",
+      "group_id": "primary",
+      "question": "In Note 4, what was the fair value of corporate debt securities at September 28, 2024 and September 30, 2023, and how much did it change?",
+      "expected_answer": "$63,939 million in 2024 versus $70,890 million in 2023, a decrease of $6,951 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39,
+        40
+      ],
+      "supporting_chunk_ids": [
+        "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76",
+        "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):",
+          "printed_page": 36,
+          "raw_start": 1417,
+          "raw_end": 1652,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "\n2024\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities",
+          "printed_page": 36,
+          "raw_start": 1652,
+          "raw_end": 1807,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "Corporate debt securities 65,622 270 (1,953) 63,939 26 16,027 47,886",
+          "printed_page": 36,
+          "raw_start": 2296,
+          "raw_end": 2364,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 40,
+          "quote": "2023\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities",
+          "printed_page": 37,
+          "raw_start": 0,
+          "raw_end": 154,
+          "chunk_ids": [
+            "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 40,
+          "quote": "Corporate debt securities 76,840 6 (5,956) 70,890 20 12,627 58,243",
+          "printed_page": 37,
+          "raw_start": 656,
+          "raw_end": 722,
+          "chunk_ids": [
+            "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": false,
+      "explicit_pages_complete": true,
+      "page_context_chars": 6336,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-027:primary",
+      "item_id": "aapl24-027",
+      "group_id": "primary",
+      "question": "In Note 4, what cash and cash equivalents total is reported for September 28, 2024, and how much of it was held in escrow and restricted from general use?",
+      "expected_answer": "The Note 4 total is $29,943 million, including $2.6 billion held in escrow and restricted from general use to settle the State Aid Decision obligation.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39,
+        40
+      ],
+      "supporting_chunk_ids": [
+        "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76",
+        "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):",
+          "printed_page": 36,
+          "raw_start": 1417,
+          "raw_end": 1652,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "\n2024\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities",
+          "printed_page": 36,
+          "raw_start": 1652,
+          "raw_end": 1807,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 39,
+          "quote": "Total (2)(3) $ 160,600 $ 688 $ (4,638) $ 156,650 $ 29,943 $ 35,228 $ 91,479",
+          "printed_page": 36,
+          "raw_start": 2546,
+          "raw_end": 2621,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 40,
+          "quote": "(2) As of September 28, 2024, cash and cash equivalents included $2.6 billion held in escrow and restricted from general use.\nThese restricted cash and cash equivalents were designated to settle the Company’s obligation related to the State Aid\nDecision (refer to Note 7, “Income Taxes”).",
+          "printed_page": 37,
+          "raw_start": 1289,
+          "raw_end": 1577,
+          "chunk_ids": [
+            "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": false,
+      "explicit_pages_complete": true,
+      "page_context_chars": 6336,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl24-028:primary",
+      "item_id": "aapl24-028",
+      "group_id": "primary",
+      "question": "According to Note 4, what were the unrealized losses on corporate debt securities at September 30, 2023?",
+      "expected_answer": "$5,956 million of unrealized losses, shown as (5,956) in the 2023 table.",
+      "review_status": "pending",
+      "supporting_pages": [
+        39,
+        40
+      ],
+      "supporting_chunk_ids": [
+        "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76",
+        "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+      ],
+      "evidence": [
+        {
+          "page": 39,
+          "quote": "Cash, Cash Equivalents and Marketable Securities\nThe following tables show the Company’s cash, cash equivalents and marketable securities by significant investment category\nas of September 28, 2024 and September 30, 2023 (in millions):",
+          "printed_page": 36,
+          "raw_start": 1417,
+          "raw_end": 1652,
+          "chunk_ids": [
+            "aeb3cfbb1be7a3a8f0f8ef3a9bdec9ffa2a8e8092aa0a1ca85802fc77a988c76"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 40,
+          "quote": "2023\nCash and Current Non-Current\nAdjusted Unrealized Unrealized Fair Cash Marketable Marketable\nCost Gains Losses Value Equivalents Securities Securities",
+          "printed_page": 37,
+          "raw_start": 0,
+          "raw_end": 154,
+          "chunk_ids": [
+            "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 40,
+          "quote": "Corporate debt securities 76,840 6 (5,956) 70,890 20 12,627 58,243",
+          "printed_page": 37,
+          "raw_start": 656,
+          "raw_end": 722,
+          "chunk_ids": [
+            "feb0d4cc2212c6783bed8de5df664744ab56673106aed5d2e68704b0972a140d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": false,
+      "explicit_pages_complete": true,
+      "page_context_chars": 6336,
+      "context_error": null
+    }
+  ]
+}

@@ -1,11 +1,84 @@
 # Provenance
 
-Traceable financial intelligence, built from source evidence upward. The current
-milestone ingests one real SEC filing PDF into page-preserving text and citation-ready
-chunks, with an offline evidence-context diagnostic set and a first dense retrieval
-baseline, BM25 lexical retrieval, a fixed hybrid comparison, and a query command
-that exports bounded cited evidence. LLM generation
-and claim verification are not implemented.
+Traceable financial intelligence, built from source evidence upward.
+
+## Current foundation audit
+
+The active milestone is ingestion and benchmark quality. The repository already
+contains dense/BM25/hybrid retrieval, query export, citation validation, optional
+Claude generation and saved-generation diagnostics from earlier milestones. These
+exist in code; they are not prerequisites for the foundation workflow below and
+were not expanded during this audit. Claude live behavior remains untested, and
+semantic claim verification and a frontend are not implemented. Later sections
+record prior experiments; their proposed next steps are superseded by this audit.
+
+Verified foundation: one real Apple FY2024 filing, 121 preserved PDF pages,
+314 sentence-v2 chunks, conservative cleaning, exact raw text offsets, source PDF
+SHA-256 verification, explicit page context, and benchmark version 0.3.0 with
+28 questions (23 answerable, 5 unsupported). All 28 human reviews are pending.
+
+The original eight-case single-page diagnostic remains as a historical baseline.
+Its expanded successor now evaluates **35 evidence-group cases** from those 23
+answerable questions: 23 primary groups and 12 alternative support paths. These
+are not 35 independent questions. Unsupported questions have no fabricated
+evidence pages or chunk IDs and are listed separately. Reusing reviewed-by-agent
+anchors avoids creating a second competing label set; human validation is still
+required. All anchors were rechecked against fresh PDF extraction for exact unique
+occurrence, page assignment and chunk coverage; the table boundary was also
+visually inspected. This does not establish exhaustive relevance or answer accuracy.
+
+`data/evaluation/aapl-2024-10k.context-v2.json` is the versioned ground-truth mapping
+snapshot (diagnostic 2.0.0, benchmark 0.3.0). It records raw quote ranges, PDF and
+printed pages, supporting chunk IDs, expected answers, review status, source hash,
+benchmark hash, extraction/chunking settings and a corpus fingerprint independent
+of local filesystem paths. Its mappings are **draft ground truth**, not human
+adjudications. Tests regenerate it from the actual PDF instead of trusting a
+previously processed JSON. Intentional parser, chunking or label changes require
+reviewing and versioning the replacement snapshot; do not blindly refresh it.
+
+| Evidence-context diagnostic | Complete cases |
+| --- | ---: |
+| One original chunk contains all required anchors | 27/35 |
+| Target page alone, within 8,000 characters | 30/35 |
+| Explicitly selected required pages, within 8,000 characters | 35/35 |
+
+The explicit-page measurement uses annotated support pages (an oracle), not a
+retriever. It measures availability of evidence after extraction/cleaning, not
+model performance. Five cases require multiple pages: two alternative support
+paths and the three Note 4 cases below.
+
+### Apple table boundary: resolved interpretation, explicit context required
+
+Visual inspection of PDF pages 39–40 (printed 36–37) confirms two **different
+year tables**, not a single 2024 table continuing onto the next page:
+
+- Page 39 contains the Note 4 introduction with units in millions, the 2024 header,
+  corporate debt fair value 63,939, and the cash-equivalents total 29,943.
+- Page 40 begins with its own 2023 header and corporate debt fair value 70,890;
+  unrealized losses are shown as (5,956). The common units introduction remains
+  on page 39.
+- Footnote (2), below the 2023 table on page 40, explicitly refers to September 28,
+  **2024** restricted cash of $2.6 billion. Proximity to a table is not enough to
+  assign a footnote's fiscal year.
+
+Cases `aapl24-026` through `aapl24-028` bind the needed headers, rows and footnote
+across both pages. A single-page request deliberately stays incomplete. No headers
+are copied into raw text, chunks are never merged across pages, and no automatic
+adjacent-page expansion is inferred. Flattened column headers remain difficult
+to interpret without layout; general table reconstruction/OCR is not implemented.
+
+Reproduce the expanded diagnostic after ingestion:
+
+```powershell
+uv run python -m src.evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --benchmark --output data/processed/foundation-diagnostic.json
+uv run pytest -q
+```
+
+The engineering foundation is complete for this single filing and explicit
+evidence-context scope. The research benchmark is still provisional: next review
+the 28 questions, especially unsupported labels and table semantics, with a human;
+then assess another real filing before resuming downstream development. No
+automated check can substitute for those annotation and generalization reviews.
 
 ## Run locally (PowerShell)
 
