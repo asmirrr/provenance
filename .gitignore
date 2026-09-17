@@ -9,5 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .pytest_cache/
+.env
+.env.*
 data/raw/*.pdf
 data/processed/

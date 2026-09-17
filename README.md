@@ -684,7 +684,54 @@ can pass these mechanical checks. Hashes bind supplied artifacts; they are not
 signatures and do not authenticate extraction or prove that a ranking was produced
 by the recorded model. Optional PDF verification checks byte identity separately.
 
-Next: connect one optional LLM provider to the bounded query evidence and this
-contract, retaining raw responses and failing explicitly on invalid citations.
-Human benchmark review remains required before reporting validated accuracy;
-semantic claim verification and calculation checks are still later milestones.
+### Optional Claude generation
+
+`src.generation` connects a saved query run to Anthropic's
+[Messages API](https://platform.claude.com/docs/en/api/messages/create).
+It uses the Python standard library, so offline ingestion and retrieval need no
+additional dependencies or API credentials. Specify a model ID available to your
+Anthropic account; there is intentionally no implicit model choice.
+
+First inspect a request without sending anything:
+
+```powershell
+$model = Read-Host 'Anthropic model ID'
+uv run python -m src.generation data/processed/aapl-2024-10k.json data/processed/query-hybrid.json --model $model --dry-run --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/generation-preview.json
+```
+
+For a live request, configure `ANTHROPIC_API_KEY` in the process environment.
+In PowerShell 7, this prompts without echoing the key or putting it in history:
+
+```powershell
+$env:ANTHROPIC_API_KEY = Read-Host 'Anthropic API key' -MaskInput
+uv run python -m src.generation data/processed/aapl-2024-10k.json data/processed/query-hybrid.json --model $model --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/generation-live-01.json
+Remove-Item Env:ANTHROPIC_API_KEY
+```
+
+The live command sends the question, filing metadata, delivered spans and output
+schema to Anthropic and may incur API charges. It does not send omitted candidate
+text, benchmark labels, or the complete filing. Credentials are neither written
+to artifacts nor loaded automatically from `.env`; `.env` files are Git-ignored.
+The default output limit is 2,048 tokens (`--max-tokens`, range 1–8,192), separate
+from the retrieval character budget. Calls have a 60-second timeout and no
+automatic retries. A timeout may still have incurred provider usage.
+
+The schema is included in the prompt and enforced locally, not guaranteed by
+provider-side constrained decoding. The artifact preserves the request, raw
+response (including model/usage when returned), and validation result. Only a
+normal `end_turn` text response is parsed. Truncation, refusal, unexpected content,
+invalid JSON, stale bindings or bad citations produce `invalid_response`, preserve
+the response, and exit nonzero. Transport/API failures produce `provider_error`;
+error bodies and credentials are not saved. Nothing is silently repaired or retried.
+Every run requires a new output filename, protecting prior paid runs.
+
+`citation_validated` means mechanical checks passed; semantic support remains
+`not_checked`. No delivered evidence produces `local_abstention` without an API
+call. Dry runs produce `dry_run` with no generated answer. Tests use explicitly
+synthetic provider responses. A real-filing dry run has passed; live model behavior
+has not yet been tested because no API key was configured during implementation.
+
+Next: run one live question, inspect its claims/citations and failure modes, then
+add a small generation evaluation over the existing benchmark. Human review is
+still required before reporting validated accuracy. Semantic verification,
+calculation checks, and a frontend remain later milestones.

@@ -52,17 +52,9 @@ def query_digest(run: dict) -> str:
                                     separators=(",", ":"), allow_nan=False).encode()).hexdigest()
 
 
-def validate_answer(document: ProcessedFiling, run: dict, answer: Answer) -> dict:
-    """Reconstruct delivered context before checking exact quote containment.
-
-    Integrity is relative to the supplied processed document and query artifact;
-    neither these hashes nor exact quotations prove a claim follows from evidence.
-    """
+def validate_query(document: ProcessedFiling, run: dict) -> dict:
+    """Reconstruct delivered context against the supplied processed document."""
     validate_document(document)
-    # Revalidate model instances too: callers can construct/copy models without validation.
-    answer = Answer.model_validate(answer.model_dump())
-    if answer.query_sha256 != query_digest(run):
-        raise ValueError("Answer belongs to a different query artifact")
     try:
         if run["schema_version"] != 1 or run["kind"] != "retrieved_evidence":
             raise ValueError("Unsupported query artifact")
@@ -91,6 +83,16 @@ def validate_answer(document: ProcessedFiling, run: dict, answer: Answer) -> dic
             raise ValueError("Delivered context does not match ranked selection")
     except (KeyError, TypeError, AttributeError) as exc:
         raise ValueError("Malformed query artifact") from exc
+    return selection
+
+
+def validate_answer(document: ProcessedFiling, run: dict, answer: Answer) -> dict:
+    """Check citation integrity, not semantic support or source authenticity."""
+    # Revalidate instances constructed/copied without Pydantic validation.
+    answer = Answer.model_validate(answer.model_dump())
+    if answer.query_sha256 != query_digest(run):
+        raise ValueError("Answer belongs to a different query artifact")
+    selection = validate_query(document, run)
     spans = selection["bundle"]["spans"] if selection["bundle"] else []
     count = 0
     for claim in answer.claims:
