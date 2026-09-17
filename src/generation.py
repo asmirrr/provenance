@@ -78,19 +78,24 @@ def generate(document, run, *, model, max_tokens=2048, dry_run=False, api_key=No
         return {**artifact, "status": "provider_error", "error": str(exc)}
     artifact["raw_response"] = response
     try:
-        if not isinstance(response, dict) or response.get("stop_reason") != "end_turn":
-            raise ValueError("Response did not finish normally (end_turn required)")
-        blocks = response.get("content")
-        if not isinstance(blocks, list) or not blocks or any(
-            not isinstance(b, dict) or b.get("type") != "text" or not isinstance(b.get("text"), str)
-            for b in blocks
-        ):
-            raise ValueError("Expected nonempty text-only response")
-        answer = Answer.model_validate_json("".join(b["text"] for b in blocks))
-        artifact["validation"] = validate_answer(document, run, answer)
+        artifact["validation"] = validate_response(document, run, response)
     except ValueError as exc:
         return {**artifact, "status": "invalid_response", "error": str(exc)}
     return {**artifact, "status": "citation_validated"}
+
+
+def validate_response(document, run, response):
+    """Recheck raw provider output without trusting a saved validation result."""
+    if not isinstance(response, dict) or response.get("stop_reason") != "end_turn":
+        raise ValueError("Response did not finish normally (end_turn required)")
+    blocks = response.get("content")
+    if not isinstance(blocks, list) or not blocks or any(
+        not isinstance(b, dict) or b.get("type") != "text" or not isinstance(b.get("text"), str)
+        for b in blocks
+    ):
+        raise ValueError("Expected nonempty text-only response")
+    answer = Answer.model_validate_json("".join(b["text"] for b in blocks))
+    return validate_answer(document, run, answer)
 
 
 def main():

@@ -731,7 +731,52 @@ call. Dry runs produce `dry_run` with no generated answer. Tests use explicitly
 synthetic provider responses. A real-filing dry run has passed; live model behavior
 has not yet been tested because no API key was configured during implementation.
 
-Next: run one live question, inspect its claims/citations and failure modes, then
-add a small generation evaluation over the existing benchmark. Human review is
-still required before reporting validated accuracy. Semantic verification,
-calculation checks, and a frontend remain later milestones.
+### Evaluate saved generation runs offline
+
+`src.generation_evaluation` consumes saved query and generation artifacts without
+calling a model. Create a JSON manifest like this (paths resolve relative to the
+manifest, and the query's question must exactly match the benchmark item):
+
+```json
+[
+  {
+    "item_id": "aapl24-001",
+    "query": "aapl24-001-query.json",
+    "generation": "aapl24-001-generation.json"
+  }
+]
+```
+
+Run the evaluator with a new output path:
+
+```powershell
+uv run python -m src.generation_evaluation data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json data/processed/generation-evaluation-preview/manifest.json --allow-draft --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/generation-evaluation-preview/report-02.json
+```
+
+The preview manifest is a local smoke artifact for items `aapl24-001`, `aapl24-003`
+and `aapl24-021`: factual, table and unsupported examples. Its three generation
+artifacts are explicitly dry runs with a placeholder model, not Claude outputs.
+For a live diagnostic, generate new artifacts using your configured key and real
+model, then put those paths in a separate manifest. No key is needed to evaluate
+saved runs. Selected subsets list all remaining unevaluated benchmark IDs.
+
+Evaluation checks benchmark/document identity, question matching, query bindings,
+and the exact request built from delivered evidence. It reparses raw provider
+responses and reruns citation checks instead of trusting saved success flags.
+Duplicate item IDs are rejected. The report records artifact hashes, model IDs,
+outcome counts and answered/abstained counts separately for answerable and
+unsupported items. Invalid responses, provider errors and dry runs are never
+counted as abstentions. Local empty-context abstentions are reported separately
+from provider responses. Saved artifacts are not cryptographically authenticated
+provider records, and aggregates may include different models/configurations;
+use matching run settings for comparisons.
+
+These are mechanical and behavioral diagnostics, not semantic accuracy scores.
+Both claim accuracy and abstention accuracy remain `not_scored`, and each answer
+requires human review. The draft benchmark requires explicit `--allow-draft`.
+Expected answers and evidence labels are used only locally, never inserted into
+generation prompts by this evaluator.
+
+Next: collect one real Claude response and inspect its failure modes, then review
+a small set of live answers using this evaluator. Human benchmark review,
+semantic verification, calculation checks, and a frontend remain ahead.
