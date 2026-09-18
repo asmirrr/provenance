@@ -374,3 +374,36 @@ def test_real_cross_page_tables_require_explicit_complete_evidence(chunking, mon
     assert "$2.6 billion" in restriction["evidence"][-1]["quote"]
     assert losses["evidence"][1]["quote"].startswith("2023\n")
     assert "(5,956)" in losses["evidence"][-1]["quote"]
+
+
+@pytest.mark.parametrize('position', ['first', 'middle', 'last', 'all'])
+def test_missing_chunks_cannot_silently_remove_evidence(filing, position):
+    chunks = [c for c in filing.chunks if c.page == 1]
+    assert len(chunks) >= 3
+    if position == 'all':
+        removed = {c.chunk_id for c in chunks}
+    else:
+        index = {'first': 0, 'middle': len(chunks)//2, 'last': -1}[position]
+        removed = {chunks[index].chunk_id}
+    filing.chunks = [c for c in filing.chunks if c.chunk_id not in removed]
+    with pytest.raises(ValueError, match='Uncovered cleaned text'):
+        validate_document(filing)
+
+
+def test_valid_individual_citations_cannot_overlap(filing):
+    from src.ingestion.schema import Chunk
+    original = filing.chunks[0]
+    data = original.model_dump()
+    data['raw_start'] += 1
+    data['text'] = data['text'][1:]
+    data['chunk_id'] = hashlib.sha256(
+        f"{filing.source_sha256}:{data['page']}:{data['raw_start']}:{data['raw_end']}".encode()).hexdigest()
+    filing.chunks.append(Chunk.model_validate(data))
+    with pytest.raises(ValueError, match='Overlapping chunks'):
+        validate_document(filing)
+
+
+def test_chunk_order_does_not_change_coverage_validation(filing):
+    validate_document(filing)
+    filing.chunks.reverse()
+    validate_document(filing)

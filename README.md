@@ -12,6 +12,20 @@ were not expanded during this audit. Claude live behavior remains untested, and
 semantic claim verification and a frontend are not implemented. Later sections
 record prior experiments; their proposed next steps are superseded by this audit.
 
+Current development runs offline without a paid API. Anthropic credentials are
+optional and are only needed for an explicitly invoked live generation command.
+An OpenRouter adapter has not been implemented; provider selection can wait until
+the foundation and human review are ready.
+
+Corpus validation checks complete, non-overlapping chunk coverage of every cleaned
+page, in addition to checking each individual citation. Missing leading, middle,
+trailing or whole-page chunks fail validation; whitespace-only gaps are permitted.
+This prevents a partially deleted corpus from being accepted simply because its
+remaining citations are valid. Chunk list order is irrelevant to this check.
+It still cannot detect deletion of an entire page together with its chunks or
+authenticate edited extraction text without comparing against the original PDF;
+the fresh-PDF regression test provides that comparison for the pinned Apple filing.
+
 Verified foundation: one real Apple FY2024 filing, 121 preserved PDF pages,
 314 sentence-v2 chunks, conservative cleaning, exact raw text offsets, source PDF
 SHA-256 verification, explicit page context, and benchmark version 0.3.0 with

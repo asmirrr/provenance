@@ -49,6 +49,21 @@ def validate_document(document: ProcessedFiling) -> None:
                 raise ValueError(f"Chunk metadata mismatch: {field}")
         if chunk.source_path != document.source_path or chunk.printed_page != page.printed_page:
             raise ValueError("Chunk source path or printed page mismatch")
+    # Individually valid citations are insufficient: missing chunks can silently
+    # erase evidence, while overlapping chunks can double-count source text.
+    by_page = {number: [] for number in pages}
+    for chunk in document.chunks:
+        by_page[chunk.page].append(chunk)
+    for number, page in pages.items():
+        cursor = page.raw_start
+        for chunk in sorted(by_page[number], key=lambda c: c.raw_start):
+            if chunk.raw_start < cursor:
+                raise ValueError(f"Overlapping chunks on PDF page {number}")
+            if page.raw_text[cursor:chunk.raw_start].strip():
+                raise ValueError(f"Uncovered cleaned text on PDF page {number}")
+            cursor = chunk.raw_end
+        if page.raw_text[cursor:page.raw_start + len(page.text)].strip():
+            raise ValueError(f"Uncovered cleaned text on PDF page {number}")
 
 
 def resolve_evidence(document: ProcessedFiling, chunk_ids: list[str], *,
