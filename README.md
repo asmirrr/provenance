@@ -25,6 +25,28 @@ remaining citations are valid. Chunk list order is irrelevant to this check.
 It still cannot detect deletion of an entire page together with its chunks or
 authenticate edited extraction text without comparing against the original PDF;
 the fresh-PDF regression test provides that comparison for the pinned Apple filing.
+The reusable audit command below performs it for any supported processed filing.
+
+### Audit a processed corpus against its PDF
+
+```powershell
+uv run python -m src.ingestion.audit data/processed/aapl-2024-10k.json data/raw/aapl-2024-10k.pdf --output data/processed/source-audit.json
+```
+
+This offline command verifies PDF bytes, validates internal citations, then runs
+fresh ingestion with the stored metadata, chunking strategy and character limit.
+It reports missing/unexpected/changed pages and chunks, page-order changes, parser
+version changes, schema differences and warning differences. It catches deletion
+of an entire page plus its chunks, and coordinated edits to raw and chunk text
+that ordinary citation checks cannot detect. Source paths and chunk-list order
+may differ without invalidating equivalent content.
+
+A match exits zero; a reproducibility mismatch saves its report and exits one.
+Invalid input or a different PDF fails before a comparison report is produced.
+Choose a new output filename for each audit; existing files are never overwritten.
+The Apple corpus matched fresh ingestion: 121 pages and 314 chunks. Re-extraction
+uses the same parser, so this is not independent proof of visual table correctness,
+OCR quality, or the truth of supplied company/filing metadata. No API key is used.
 
 Verified foundation: one real Apple FY2024 filing, 121 preserved PDF pages,
 314 sentence-v2 chunks, conservative cleaning, exact raw text offsets, source PDF
