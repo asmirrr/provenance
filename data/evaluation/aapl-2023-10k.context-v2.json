@@ -1,0 +1,273 @@
+{
+  "diagnostic_version": "2.0.0",
+  "benchmark_version": "0.1.0",
+  "benchmark_model_sha256": "0f3a42deececfa23d1cbe9cda615b4883ca786ee2f34a4bebb0339590b597063",
+  "corpus_sha256": "b920c53976d415f3e1ff1f16542596bb8d129beb5400160a7f56ccd64dabf445",
+  "source_sha256": "e36d41ed3a32874efba3e33dc89ef7e1329e32a26e91b453cb0e9b680288a783",
+  "extractor": "pdfplumber 0.11.10",
+  "chunking": "sentence-v2",
+  "max_chars": 1800,
+  "page_count": 80,
+  "chunk_count": 206,
+  "benchmark_status": "draft_pending_human_review",
+  "question_count": 5,
+  "answerable_question_count": 5,
+  "case_count": 5,
+  "unsupported_item_ids": [],
+  "single_chunk_complete": 4,
+  "target_page_complete": 5,
+  "explicit_pages_complete": 5,
+  "context_max_chars": 8000,
+  "interpretation": "Oracle-selected context availability, not retrieval or answer accuracy. Alternative groups are separate cases. Human review pending for draft labels.",
+  "results": [
+    {
+      "case_id": "aapl23-001:primary",
+      "item_id": "aapl23-001",
+      "group_id": "primary",
+      "question": "What were Apple's total net sales in fiscal 2023?",
+      "expected_answer": "$383,285 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        31
+      ],
+      "supporting_chunk_ids": [
+        "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+      ],
+      "evidence": [
+        {
+          "page": 31,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 30, September 24, September 25,\n2023 2022 2021",
+          "printed_page": 28,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 31,
+          "quote": "Total net sales 383,285 394,328 365,817",
+          "printed_page": 28,
+          "raw_start": 294,
+          "raw_end": 333,
+          "chunk_ids": [
+            "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl23-002:primary",
+      "item_id": "aapl23-002",
+      "group_id": "primary",
+      "question": "What was Apple's diluted earnings per share in fiscal 2023?",
+      "expected_answer": "$6.13 per share.",
+      "review_status": "pending",
+      "supporting_pages": [
+        31
+      ],
+      "supporting_chunk_ids": [
+        "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+      ],
+      "evidence": [
+        {
+          "page": 31,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and per-share amounts)\nYears ended\nSeptember 30, September 24, September 25,\n2023 2022 2021",
+          "printed_page": 28,
+          "raw_start": 49,
+          "raw_end": 213,
+          "chunk_ids": [
+            "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 31,
+          "quote": "Diluted $ 6.13 $ 6.11 $ 5.61",
+          "printed_page": 28,
+          "raw_start": 945,
+          "raw_end": 973,
+          "chunk_ids": [
+            "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "9c42ee31d22134ad36322a4d08c66864df322c8dc4b2f3cda0d88a23296efa2d"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1159,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl23-003:primary",
+      "item_id": "aapl23-003",
+      "group_id": "primary",
+      "question": "What were Apple's total assets as of September 30, 2023?",
+      "expected_answer": "$352,583 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        33
+      ],
+      "supporting_chunk_ids": [
+        "75a2b0c4d0e7220bb06f3ea4227613afab2728d93bea503438fd33f766d41341"
+      ],
+      "evidence": [
+        {
+          "page": 33,
+          "quote": "(In millions, except number of shares, which are reflected in thousands, and par value)\nSeptember 30, September 24,\n2023 2022",
+          "printed_page": 30,
+          "raw_start": 39,
+          "raw_end": 164,
+          "chunk_ids": [
+            "75a2b0c4d0e7220bb06f3ea4227613afab2728d93bea503438fd33f766d41341"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 33,
+          "quote": "Total assets $ 352,583 $ 352,755",
+          "printed_page": 30,
+          "raw_start": 634,
+          "raw_end": 666,
+          "chunk_ids": [
+            "75a2b0c4d0e7220bb06f3ea4227613afab2728d93bea503438fd33f766d41341"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "75a2b0c4d0e7220bb06f3ea4227613afab2728d93bea503438fd33f766d41341"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 1581,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl23-004:primary",
+      "item_id": "aapl23-004",
+      "group_id": "primary",
+      "question": "How much cash did Apple generate from operating activities in fiscal 2023?",
+      "expected_answer": "$110,543 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        35
+      ],
+      "supporting_chunk_ids": [
+        "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda"
+      ],
+      "evidence": [
+        {
+          "page": 35,
+          "quote": "(In millions)\nYears ended\nSeptember 30, September 24, September 25,\n2023 2022 2021",
+          "printed_page": 32,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 35,
+          "quote": "Cash generated by operating activities 110,543 122,151 104,038",
+          "printed_page": 32,
+          "raw_start": 825,
+          "raw_end": 887,
+          "chunk_ids": [
+            "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2182,
+      "context_error": null
+    },
+    {
+      "case_id": "aapl23-005:primary",
+      "item_id": "aapl23-005",
+      "group_id": "primary",
+      "question": "How much cash did Apple pay for income taxes, net, in fiscal 2023?",
+      "expected_answer": "$18,679 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        35
+      ],
+      "supporting_chunk_ids": [
+        "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda",
+        "73439dcb5340fad374b9a3faee901a8040f13b86208b6a66ff42f36504f8f4c1"
+      ],
+      "evidence": [
+        {
+          "page": 35,
+          "quote": "(In millions)\nYears ended\nSeptember 30, September 24, September 25,\n2023 2022 2021",
+          "printed_page": 32,
+          "raw_start": 49,
+          "raw_end": 131,
+          "chunk_ids": [
+            "82cf3cc8df3336f3ed20789777b9aa4b91cacb08ea66813dd7cd16e63b316eda"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        },
+        {
+          "page": 35,
+          "quote": "Cash paid for income taxes, net $ 18,679 $ 19,573 $ 25,385",
+          "printed_page": 32,
+          "raw_start": 2016,
+          "raw_end": 2074,
+          "chunk_ids": [
+            "73439dcb5340fad374b9a3faee901a8040f13b86208b6a66ff42f36504f8f4c1"
+          ],
+          "sections": [
+            "Item 8. Financial Statements and Supplementary Data"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2182,
+      "context_error": null
+    }
+  ]
+}

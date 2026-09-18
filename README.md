@@ -2,6 +2,36 @@
 
 Traceable financial intelligence, built from source evidence upward.
 
+## Second-filing ingestion check
+
+Apple FY2023 now provides a controlled cross-year test of the existing ingestion
+pipeline. Its [SEC filing](https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm)
+was filed November 3, 2023. The issuer-hosted PDF produces **80 pages and 206
+sentence-v2 chunks**, with no empty-page warnings and a matching fresh-ingestion
+audit. No parser or chunking changes were needed.
+
+```powershell
+Invoke-WebRequest -Uri 'https://s2.q4cdn.com/470004039/files/doc_earnings/2023/q4/filing/_10-K-Q4-2023-As-Filed.pdf' -OutFile data/raw/aapl-2023-10k.pdf
+uv run python -m src.ingestion.pipeline data/raw/aapl-2023-10k.pdf data/raw/aapl-2023-10k.metadata.json data/processed/aapl-2023-10k.json
+uv run python -m src.evaluation data/processed/aapl-2023-10k.json data/benchmark/aapl-2023-10k.v1.json --benchmark --output data/processed/aapl-2023-diagnostic.json
+uv run python -m src.ingestion.audit data/processed/aapl-2023-10k.json data/raw/aapl-2023-10k.pdf --output data/processed/aapl-2023-audit.json
+```
+
+The five draft table cases cover sales, diluted EPS, assets, operating cash flow,
+and cash income-tax payments. Every case includes its actual 2023 year/unit header
+and row. Four fit one chunk; all five fit explicit page context. The pinned
+`data/evaluation/aapl-2023-10k.context-v2.json` records exact pages, offsets and chunk
+IDs against benchmark 0.1.0. Source SHA-256:
+`e36d41ed3a32874efba3e33dc89ef7e1329e32a26e91b453cb0e9b680288a783`.
+
+Fresh-PDF tests check all page numbers, filing-year metadata, printed page labels,
+the pinned diagnostic, and rejection of FY2024 benchmark labels against FY2023.
+The new cases are agent-checked extraction smoke tests, not human-reviewed truth
+or a held-out accuracy benchmark. Flattened table text and character decoding
+limitations remain. Both filings are from Apple, so this does not establish
+cross-company generalization. Next: human-review the draft labels and test a
+different issuer before generalizing the pipeline. No paid API is required.
+
 ## Current foundation audit
 
 The active milestone is ingestion and benchmark quality. The repository already
