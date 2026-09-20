@@ -172,12 +172,32 @@ def complete_evidence_groups(item: dict, selected_chunk_ids: list[str]) -> list[
             if group["supporting_chunk_ids"] and set(group["supporting_chunk_ids"]) <= selected]
 
 
-def review_markdown(bound: dict) -> str:
+def review_markdown(bound: dict, *, item_ids: list[str] | None = None,
+                    limit: int | None = None) -> str:
+    """Export a review batch without changing labels or the full bound artifact."""
+    if item_ids is not None and limit is not None:
+        raise ValueError("Choose explicit review items or a pending batch limit, not both")
+    items = bound["items"]
+    if item_ids is not None:
+        by_id = {item["id"]: item for item in items}
+        if not item_ids or len(set(item_ids)) != len(item_ids) or any(i not in by_id for i in item_ids):
+            raise ValueError("Review item IDs must be nonempty, unique and known")
+        items = [by_id[i] for i in item_ids]
+    elif limit is not None:
+        if limit < 1:
+            raise ValueError("Review limit must be positive")
+        # Absence labels first, then cross-page support, preserving source order within ties.
+        pending = [i for i in items if i["review_status"] == "pending"]
+        items = sorted(pending, key=lambda i: (
+            i["answerable"], not any(len(g["supporting_pages"]) > 1 for g in i["evidence_groups"])))[:limit]
     lines = [f"# Provenance benchmark {bound['version']} — review packet", "",
              f"Status: **{bound['status']}**. Pending: {bound['pending_review_count']} / {bound['item_count']}.",
              "", bound["review_method"], "",
              f"[Source PDF]({bound['source_url']}) · [SEC filing]({bound['sec_url']})", "",
              f"Source SHA-256: `{bound['source_sha256']}`", "",
+             f"Benchmark model SHA-256: `{bound['benchmark_model_sha256']}`", "",
+             f"Document model SHA-256: `{bound['document_model_sha256']}`", "",
+             f"This packet includes {len(items)} of {bound['item_count']} questions; counts below cover the full benchmark.", "",
              f"Chunking: {bound['chunking']}, {bound['max_chars']} characters.", "",
              "For each item, check the original PDF, answer, units, fiscal period, evidence sufficiency,",
              "alternative supporting passages and answerability. Unsupported items require an absence/scope",
@@ -194,7 +214,9 @@ def review_markdown(bound: dict) -> str:
     lines.extend(["", "Pending queue (unsupported questions first, for absence/scope review):", "",
                   ", ".join(f"`{item_id}`" for item_id in progress["pending_item_ids"])
                   or "No pending items. Overall benchmark status must still be finalized explicitly.", ""])
-    for item in bound["items"]:
+    if not items:
+        lines.extend(["No pending items remain for this batch. No review status was changed.", ""])
+    for item in items:
         lines.extend([f"## {item['id']}: {item['question']}", "",
                       f"Category: {item['category']} | Difficulty: {item['difficulty']} | Review: {item['review_status']}", "",
                       f"Expected answer: {item['expected_answer'] if item['answerable'] else 'Abstain — unsupported by this corpus.'}", "",
@@ -206,13 +228,16 @@ def review_markdown(bound: dict) -> str:
             lines.extend([f"### Evidence group: {group['group_id']}", "",
                           "All excerpts below are jointly required; another complete group is an alternative.", ""])
             for anchor in group["evidence"]:
-                lines.extend([f"PDF page {anchor['page']} (printed {anchor['printed_page']}), raw characters "
+                printed = anchor['printed_page'] if anchor['printed_page'] is not None else 'unknown'
+                page_url = bound['source_url'].split('#', 1)[0] + f"#page={anchor['page']}"
+                lines.extend([f"[PDF page {anchor['page']}]({page_url}) (printed {printed}), raw characters "
                               f"{anchor['raw_start']}:{anchor['raw_end']}.", "",
                               *["> " + line for line in anchor["quote"].splitlines()], "",
                               "Chunk IDs: " + ", ".join(f"`{cid}`" for cid in anchor["chunk_ids"]), ""])
             if group["page_context_error"]:
                 lines.extend([f"Context limitation: {group['page_context_error']}", ""])
-        lines.extend(["Human review notes: _pending_" if item["review_status"] == "pending"
+        lines.extend(["Review checklist: answer and units; fiscal period; all required evidence; alternative groups; scope/absence if unsupported.", "",
+                      "Human review notes: _pending_" if item["review_status"] == "pending"
                       else f"Reviewed by {item['reviewer']} on {item['reviewed_on']}.", ""])
     return "\n".join(lines)
 
@@ -224,6 +249,9 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--review", type=Path, required=True)
     parser.add_argument("--source-pdf", type=Path, help="Verify the original PDF's SHA-256 before export")
+    batch = parser.add_mutually_exclusive_group()
+    batch.add_argument("--review-item", action="append", help="Export only this item in Markdown; repeat for a batch")
+    batch.add_argument("--review-limit", type=int, help="Export up to N pending questions, unsupported then cross-page first")
     args = parser.parse_args()
     inputs = {args.document.resolve(), args.benchmark.resolve()}
     if args.source_pdf:
@@ -236,8 +264,12 @@ def main():
     benchmark = Benchmark.model_validate_json(args.benchmark.read_text(encoding="utf-8"))
     bound = bind_benchmark(document, benchmark)
     bound["source_pdf_verification"] = verification
+    try:
+        review = review_markdown(bound, item_ids=args.review_item, limit=args.review_limit)
+    except ValueError as exc:
+        parser.error(str(exc))
     for path, content in ((args.output, json.dumps(bound, ensure_ascii=False, indent=2)),
-                          (args.review, review_markdown(bound))):
+                          (args.review, review)):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
     print(json.dumps({k: bound[k] for k in ("version", "item_count", "answerable_count",

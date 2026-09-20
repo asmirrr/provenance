@@ -407,3 +407,36 @@ def test_chunk_order_does_not_change_coverage_validation(filing):
     validate_document(filing)
     filing.chunks.reverse()
     validate_document(filing)
+
+
+def test_review_batch_preserves_full_labels_and_embeds_identity(filing, benchmark):
+    bound = bind_benchmark(filing, benchmark)
+    import copy
+    before = copy.deepcopy(bound)
+    text = review_markdown(bound, limit=1)
+    assert '## test-2:' in text and '## test-1:' not in text
+    assert 'includes 1 of 2 questions' in text
+    assert bound['benchmark_model_sha256'] in text
+    assert bound == before
+    explicit = review_markdown(bound, item_ids=['test-1'])
+    assert '## test-1:' in explicit and '## test-2:' not in explicit
+    assert '#page=1' in explicit and 'printed unknown' in explicit
+
+
+@pytest.mark.parametrize('kwargs', [{'limit':0}, {'item_ids':['missing']},
+    {'item_ids':['test-1','test-1']}, {'item_ids':[]}, {'item_ids':['test-1'],'limit':1}])
+def test_invalid_review_batches_fail(filing, benchmark, kwargs):
+    with pytest.raises(ValueError):
+        review_markdown(bind_benchmark(filing, benchmark), **kwargs)
+
+
+def test_review_batch_skips_reviewed_items(filing, benchmark):
+    from datetime import date
+    for item in benchmark.items:
+        item.review_status='human_reviewed'
+        item.reviewer='Synthetic test reviewer'
+        item.reviewed_on=date(2024,11,2)
+    text=review_markdown(bind_benchmark(filing,benchmark),limit=3)
+    assert 'No pending items remain' in text
+    assert '## test-1:' not in text
+    assert benchmark.status=='draft_pending_human_review'

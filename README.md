@@ -2,6 +2,38 @@
 
 Traceable financial intelligence, built from source evidence upward.
 
+## Review a small benchmark batch
+
+Human review can proceed a few questions at a time without editing the benchmark
+to create a subset. `--review-limit 3` exports up to three pending questions,
+prioritizing unsupported labels, then multi-page evidence. Alternatively, repeat
+`--review-item` to choose exact questions in a specific order. The JSON binding
+always retains the full benchmark; only the Markdown packet is filtered.
+
+For the three Apple table-boundary cases:
+
+```powershell
+uv run python -m src.benchmark data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/review-foundation-bound.json --review data/processed/review-table-batch.md --review-item aapl24-026 --review-item aapl24-027 --review-item aapl24-028
+```
+
+Each packet includes source/benchmark/document fingerprints, exact quotes and
+chunk mappings, review checklists, and direct source PDF page links. PDF viewers
+may ignore URL page fragments; the one-based page number is also displayed.
+Unknown printed-page labels are explicit. Full-benchmark counts remain visible,
+so a short packet cannot be mistaken for completed review of the whole benchmark.
+
+Review the actual PDF and record corrections or approval for each item. Packet
+generation never marks a label reviewed. Human review status, reviewer and date
+must be recorded explicitly in the source benchmark; corrections require a
+benchmark version change and review of the affected pinned diagnostic snapshots.
+Markdown files are generated outputs, so keep your review notes separately before
+regenerating a packet at the same path.
+
+Hugging Face remains a future option for generation; this milestone adds no model
+dependency or hosted API. The existing optional dense baseline already uses a
+Hugging Face-hosted sentence-transformers model, independently of this offline
+review workflow.
+
 ## Cross-issuer ingestion check: Microsoft FY2024
 
 The issuer-hosted [Microsoft FY2024 10-K PDF](https://microsoft.gcs-web.com/static-files/1c864583-06f7-40cc-a94d-d11400c83cc8)
