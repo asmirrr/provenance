@@ -440,3 +440,29 @@ def test_review_batch_skips_reviewed_items(filing, benchmark):
     assert 'No pending items remain' in text
     assert '## test-1:' not in text
     assert benchmark.status=='draft_pending_human_review'
+
+
+def test_ai_review_is_separate_and_bound_to_exact_labels(filing, benchmark):
+    from src.benchmark import AIReview, validate_ai_review
+    import copy
+    bound=bind_benchmark(filing,benchmark)
+    review=AIReview(schema_version=1,review_type='ai',reviewer='Synthetic AI',reviewed_on='2024-11-02',
+        source_sha256=bound['source_sha256'],benchmark_model_sha256=bound['benchmark_model_sha256'],
+        method='Synthetic test only',items=[dict(item_id='test-1',verdict='confirmed',pages=[1],findings='Synthetic confirmation')])
+    before=copy.deepcopy(bound)
+    validate_ai_review(bound,review)
+    packet=review_markdown(bound,ai_review=review)
+    assert 'AI review only: **confirmed**' in packet
+    assert 'Human review status is unchanged' in packet
+    assert bound==before and not bound['ready_for_scored_evaluation']
+    benchmark.items[0].expected_answer='Changed label'
+    with pytest.raises(ValueError,match='stale'):
+        validate_ai_review(bind_benchmark(filing,benchmark),review)
+    for field,value in [('source_sha256','0'*64),('review_type','human')]:
+        payload=review.model_dump(mode='json');payload[field]=value
+        with pytest.raises(ValueError):
+            validate_ai_review(bound,AIReview.model_validate(payload))
+    for items in [[review.items[0],review.items[0]], [review.items[0].model_copy(update={'item_id':'unknown'})],
+                  [review.items[0].model_copy(update={'pages':[999]})]]:
+        with pytest.raises(ValueError):
+            validate_ai_review(bound,review.model_copy(update={'items':items}))

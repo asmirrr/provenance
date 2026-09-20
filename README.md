@@ -4,6 +4,29 @@ Traceable financial intelligence, built from source evidence upward.
 
 ## Review a small benchmark batch
 
+The three Note 4 cases (`aapl24-026`–`028`) now have a separately recorded AI review
+in `data/benchmark/aapl-2024-10k.ai-review.v1.json`. On September 20, 2026, the AI
+assistant checked both rendered PDF pages 39–40, verified fresh extraction against
+persisted text and checked the comparison arithmetic. All three existing answers
+and selected evidence groups were confirmed; no label corrections were needed.
+This is AI review in the same development workflow, not independent human approval.
+
+Attach the findings to a packet with:
+
+```powershell
+uv run python -m src.benchmark data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/ai-reviewed-bound.json --review data/processed/ai-reviewed-table-batch.md --review-item aapl24-026 --review-item aapl24-027 --review-item aapl24-028 --ai-review data/benchmark/aapl-2024-10k.ai-review.v1.json
+```
+
+Review records are checked against source and canonical benchmark hashes and
+must reference unique known questions and existing PDF pages. Any benchmark
+change invalidates the record until it is reviewed again; a matching hash only
+establishes the record's binding, not that its conclusions are true. Findings
+appear separately from human review, and cannot promote a draft benchmark to
+human-reviewed status. All 28 human reviews remain pending. AI-reviewed draft
+work can continue under the existing explicit diagnostic flags without claiming
+validated accuracy. The next review batch should address unsupported questions,
+whose absence/scope judgments require more than matching a quote.
+
 Human review can proceed a few questions at a time without editing the benchmark
 to create a subset. `--review-limit 3` exports up to three pending questions,
 prioritizing unsupported labels, then multi-page evidence. Alternatively, repeat

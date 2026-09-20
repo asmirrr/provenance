@@ -73,6 +73,46 @@ class Benchmark(BaseModel):
         return self
 
 
+class AIReviewFinding(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    item_id: str = Field(min_length=1)
+    verdict: Literal["confirmed", "correction_required"]
+    pages: list[int] = Field(min_length=1)
+    findings: str = Field(min_length=1)
+
+
+class AIReview(BaseModel):
+    """Separate provenance record; never changes human review or benchmark labels."""
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal[1]
+    review_type: Literal["ai"]
+    reviewer: str = Field(min_length=1)
+    reviewed_on: date
+    source_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    benchmark_model_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    method: str = Field(min_length=1)
+    items: list[AIReviewFinding] = Field(min_length=1)
+
+
+def validate_ai_review(bound: dict, review: AIReview) -> None:
+    if review.source_sha256 != bound["source_sha256"] or review.benchmark_model_sha256 != bound["benchmark_model_sha256"]:
+        raise ValueError("AI review is stale or belongs to another source/benchmark")
+    items = {i["id"]: i for i in bound["items"]}
+    seen = set()
+    if not review.reviewer.strip() or not review.method.strip():
+        raise ValueError("AI review requires a reviewer and method")
+    for finding in review.items:
+        if finding.item_id not in items or finding.item_id in seen:
+            raise ValueError("AI review requires unique known item IDs")
+        seen.add(finding.item_id)
+        if not finding.findings.strip() or len(set(finding.pages)) != len(finding.pages):
+            raise ValueError("AI review requires findings and unique inspected pages")
+        # Inspected pages may extend beyond selected evidence (e.g. absence review),
+        # but they must be real source pages. Binding lists source page count below.
+        if any(p < 1 or p > bound["page_count"] for p in finding.pages):
+            raise ValueError("AI review cites a nonexistent source page")
+
+
 def _bind_group(document: ProcessedFiling, evidence: list[EvidenceAnchor], item_id: str) -> dict:
     """Resolve one jointly required evidence set, independently of alternatives."""
     pages = {p.page: p for p in document.pages}
@@ -153,6 +193,7 @@ def bind_benchmark(document: ProcessedFiling, benchmark: Benchmark) -> dict:
         "document_model_sha256": hashlib.sha256(document.model_dump_json().encode()).hexdigest(),
         "chunking": document.chunking, "max_chars": document.max_chars, "extractor": document.extractor,
         "item_count": len(rows), "answerable_count": sum(i.answerable for i in benchmark.items),
+        "page_count": len(document.pages),
         "pending_review_count": sum(i.review_status == "pending" for i in benchmark.items),
         "evidence_semantics": "any_complete_group",
         "items_with_alternatives": sum(bool(i.alternative_evidence) for i in benchmark.items),
@@ -173,11 +214,15 @@ def complete_evidence_groups(item: dict, selected_chunk_ids: list[str]) -> list[
 
 
 def review_markdown(bound: dict, *, item_ids: list[str] | None = None,
-                    limit: int | None = None) -> str:
+                    limit: int | None = None, ai_review: AIReview | None = None) -> str:
     """Export a review batch without changing labels or the full bound artifact."""
     if item_ids is not None and limit is not None:
         raise ValueError("Choose explicit review items or a pending batch limit, not both")
     items = bound["items"]
+    ai_findings = {}
+    if ai_review is not None:
+        validate_ai_review(bound, ai_review)
+        ai_findings = {i.item_id: i for i in ai_review.items}
     if item_ids is not None:
         by_id = {item["id"]: item for item in items}
         if not item_ids or len(set(item_ids)) != len(item_ids) or any(i not in by_id for i in item_ids):
@@ -221,6 +266,11 @@ def review_markdown(bound: dict, *, item_ids: list[str] | None = None,
                       f"Category: {item['category']} | Difficulty: {item['difficulty']} | Review: {item['review_status']}", "",
                       f"Expected answer: {item['expected_answer'] if item['answerable'] else 'Abstain — unsupported by this corpus.'}", "",
                       f"Notes: {item['notes']}", ""])
+        if item["id"] in ai_findings:
+            finding = ai_findings[item["id"]]
+            lines.extend([f"AI review only: **{finding.verdict}** by {ai_review.reviewer} on {ai_review.reviewed_on}.",
+                          "Human review status is unchanged.", "", finding.findings, "",
+                          f"Inspected PDF pages: {', '.join(map(str, finding.pages))}.", ""])
         for claim in item["expected_claims"]:
             lines.extend([f"- Expected claim: {claim}"])
         lines.append("")
@@ -252,10 +302,13 @@ def main():
     batch = parser.add_mutually_exclusive_group()
     batch.add_argument("--review-item", action="append", help="Export only this item in Markdown; repeat for a batch")
     batch.add_argument("--review-limit", type=int, help="Export up to N pending questions, unsupported then cross-page first")
+    parser.add_argument("--ai-review", type=Path, help="Attach a separately recorded AI review without changing labels")
     args = parser.parse_args()
     inputs = {args.document.resolve(), args.benchmark.resolve()}
     if args.source_pdf:
         inputs.add(args.source_pdf.resolve())
+    if args.ai_review:
+        inputs.add(args.ai_review.resolve())
     outputs = {args.output.resolve(), args.review.resolve()}
     if inputs & outputs or len(outputs) != 2:
         parser.error("Outputs must be distinct and must not overwrite inputs")
@@ -265,7 +318,8 @@ def main():
     bound = bind_benchmark(document, benchmark)
     bound["source_pdf_verification"] = verification
     try:
-        review = review_markdown(bound, item_ids=args.review_item, limit=args.review_limit)
+        ai_review = AIReview.model_validate_json(args.ai_review.read_text(encoding="utf-8")) if args.ai_review else None
+        review = review_markdown(bound, item_ids=args.review_item, limit=args.review_limit, ai_review=ai_review)
     except ValueError as exc:
         parser.error(str(exc))
     for path, content in ((args.output, json.dumps(bound, ensure_ascii=False, indent=2)),
