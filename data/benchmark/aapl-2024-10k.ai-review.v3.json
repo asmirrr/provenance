@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "review_type": "ai",
+  "reviewer": "Codex AI assistant",
+  "reviewed_on": "2026-09-20",
+  "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
+  "benchmark_model_sha256": "bcb409cb1bc62d0279db2a30409e7fbbf73390013cff6041ea06b6222f1f5935",
+  "method": "Source PDF SHA-256 verified; fresh pdfplumber extraction of PDF pages 39 and 40 matched persisted raw text; both full pages visually inspected at 110 DPI; columns, year headers, units and footnotes checked. Comparison arithmetic independently evaluated in Python. Same AI development workflow, not an independent human adjudication; alternative relevance is not exhaustive. Additional unsupported-label review: searched all 121 extracted pages for Vision Pro, unit sales, forward-looking and stock price; read relevant context on pages 1, 4, 8, 20, 23, 26, 38 and 49. Re-extracted those pages and verified exact agreement and PDF hash. No new visual inspection claimed for this added batch. Search absence is not proof of nondisclosure; two absence judgments remain inconclusive. Follow-up review supersedes the two inconclusive findings: case-insensitive search over all 121 extracted pages for iphone, vision, wearable, whole-word unit/units, volume, quantit and selling price; inspected resulting lines and read full PDF pages 4, 24-27, 37-39 and 49-50. SHA-256 verified again and fresh pdfplumber extraction matched persisted raw text for all ten pages. Rendered PDF pages 26 and 38 visually checked at 110 DPI, including units, row labels, columns and footnotes. Confirmed here means the draft unsupported label is supported by this bounded source review, not mathematical proof of absence, independent adjudication, or a claim about external sources. No complete visual review of all 121 pages was performed.",
+  "items": [
+    {
+      "item_id": "aapl24-026",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the fourth numeric column (Fair Value): 63,939 for 2024 on PDF page 39 and 70,890 for 2023 on page 40. The introduction specifies millions and both dates. Python arithmetic confirms 63,939 - 70,890 = -6,951 million. The dates, units, columns, answer and selected anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-027",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the 2024 Cash and Cash Equivalents total of 29,943 million and footnote marker (2) on PDF page 39. Footnote (2) on page 40 explicitly states September 28, 2024, $2.6 billion held in escrow and restricted from general use for the State Aid Decision. It refers back to 2024 despite sitting below the 2023 table. Answer and anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-028",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the 2023 Corporate debt securities row, Unrealized Losses column: (5,956), not the fair value of 70,890 or the 2024 loss of (1,953). Units in millions and dates are supplied on page 39. Answer and cross-page anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-021",
+      "verdict": "confirmed",
+      "pages": [
+        1,
+        4,
+        8
+      ],
+      "findings": "The source is a fiscal-2024 filing. Page 4 distinguishes expectations from historical/current facts and says forward-looking statements are not guarantees. Fiscal-2026 realized net sales cannot be established from this corpus. Keep unsupported; a forecast or prior-year result is not the requested fact."
+    },
+    {
+      "item_id": "aapl24-022",
+      "verdict": "confirmed",
+      "pages": [
+        1,
+        20,
+        23
+      ],
+      "findings": "The requested September 11, 2026 closing price postdates this filing. Historical stock performance on page 23 and price-volatility discussion on page 20 cannot establish that later daily close. Keep unsupported; requires an external market source."
+    },
+    {
+      "item_id": "aapl24-023",
+      "verdict": "confirmed",
+      "pages": [
+        4,
+        24,
+        25,
+        26,
+        27,
+        37,
+        38,
+        39,
+        49,
+        50
+      ],
+      "findings": "Keep unsupported for this source corpus. Page 4 groups Vision Pro with other Wearables products; full category tables on pages 26 and 38 report 37,005 million for Wearables, Home and Accessories, with no standalone Vision Pro row. Page 26 explains only the broader category decrease. Product announcements on page 24, regional revenue on page 25, gross margins on page 27, revenue policies and Note 2 continuation on pages 37-39, and geographic segment disclosures on pages 49-50 supply no standalone amount or decomposition from which it can be calculated. Broader text search found no additional Vision Pro revenue disclosure. The aggregate must not be substituted for the requested product revenue. This is a bounded AI absence judgment; outside sources and unread image-only content are not established by it."
+    },
+    {
+      "item_id": "aapl24-024",
+      "verdict": "confirmed",
+      "pages": [
+        4,
+        24,
+        25,
+        26,
+        27,
+        37,
+        38,
+        39,
+        49,
+        50
+      ],
+      "findings": "Keep unsupported for this source corpus. Visually checked pages 26 and 38 report iPhone net sales of 201,183 million dollars, not phones sold. Page 25 provides qualitative regional iPhone sales changes; page 39 describes a moderately higher iPhone revenue proportion in Greater China, not a quantity. Pages 49-50 provide geographic dollar results. Pages 4 and 24 identify products and launches, and page 27 gives aggregate product margins. Revenue recognition and bundled-service allocation on pages 37-38 do not supply a realized average price and count relationship. Broader unit/volume/quantity searches found supply-risk language, stock-market volume and employee stock units rather than worldwide iPhone sales counts. Do not divide revenue by a guessed selling price or substitute restricted stock units. This is a bounded AI absence judgment, not a claim that no external source estimates unit sales."
+    },
+    {
+      "item_id": "aapl24-025",
+      "verdict": "confirmed",
+      "pages": [
+        4,
+        8,
+        20,
+        23
+      ],
+      "findings": "Page 4 says forward-looking statements are not guarantees; page 8 warns against using historical financial trends to anticipate future results; page 20 discusses stock volatility; page 23 says past price performance is not necessarily indicative of future performance. The requested exact guaranteed investment return is not established by this filing. A qualitative no-guarantee explanation is possible, but not the requested numerical return."
+    }
+  ]
+}

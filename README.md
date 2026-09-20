@@ -4,24 +4,35 @@ Traceable financial intelligence, built from source evidence upward.
 
 ## Review a small benchmark batch
 
-The subsequent unsupported-question review is recorded in
-`data/benchmark/aapl-2024-10k.ai-review.v2.json`, preserving the three earlier
-table findings and adding five scope/absence assessments. Future fiscal-2026
-sales, a September-2026 closing price, and an exact guaranteed future return are
-confirmed unsupported by this historical corpus. The Vision Pro standalone
-revenue and iPhone unit-count labels remain **inconclusive AI findings**: relevant
-disclosures show broader product categories and dollar sales, but inspected
-passages and phrase searches cannot prove exhaustive absence. Their draft labels
-are retained provisionally; no answer or ground-truth evidence is fabricated.
+The latest review is `data/benchmark/aapl-2024-10k.ai-review.v3.json`.
+It preserves the six earlier confirmed findings and resolves the two earlier
+inconclusive findings as **AI-confirmed unsupported within this filing**:
 
-AI review now accepts `inconclusive` alongside `confirmed` and
-`correction_required`. None of these verdicts updates human review status or
-establishes benchmark accuracy. Record v2 is a new file; the earlier review remains
-available. To inspect this batch, use `--review-limit 5 --ai-review
-data/benchmark/aapl-2024-10k.ai-review.v2.json` with the benchmark command below.
-Next: broaden the absence review for those two disclosures before treating their
-unsupported labels as established. They should be flagged as uncertain in any
-research interpretation of draft abstention results.
+- Vision Pro revenue: the disclosed $37,005 million combines Wearables, Home
+  and Accessories; the reviewed disclosures provide no standalone amount.
+- iPhone units: $201,183 million is net sales, not phones sold. Regional sales,
+  revenue allocation and geographic segment disclosures do not supply a count.
+
+The follow-up searched all 121 extracted pages with broader product, unit,
+volume, quantity and pricing terms; read full PDF pages 4, 24–27, 37–39 and
+49–50; verified fresh extraction of those ten pages; and visually checked the
+tables on PDF pages 26 and 38 (printed pages 23 and 35). The record documents
+scope and reasoning. This bounded review is not exhaustive visual inspection,
+proof of absence, or independent human adjudication. All 28 human reviews remain
+pending, benchmark labels and diagnostic snapshots are unchanged, and all eight
+recorded AI findings are now confirmed. Records v1 and v2 preserve review history.
+Tests check artifact binding and review-status separation, not semantic truth.
+
+Inspect the two reviewed cases with:
+
+```powershell
+uv run python -m src.benchmark data/processed/aapl-2024-10k.json data/benchmark/aapl-2024-10k.v1.json --source-pdf data/raw/aapl-2024-10k.pdf --output data/processed/absence-reviewed-bound.json --review data/processed/absence-reviewed.md --review-item aapl24-023 --review-item aapl24-024 --ai-review data/benchmark/aapl-2024-10k.ai-review.v3.json
+```
+
+Next: audit the remaining 20 answerable cases in small batches, including their
+alternative evidence groups and arithmetic. The ingestion/diagnostic foundation
+works across three filings; benchmark adjudication remains incomplete. No hosted
+API or model is needed for this work.
 
 The three Note 4 cases (`aapl24-026`–`028`) now have a separately recorded AI review
 in `data/benchmark/aapl-2024-10k.ai-review.v1.json`. On September 20, 2026, the AI
@@ -43,8 +54,8 @@ establishes the record's binding, not that its conclusions are true. Findings
 appear separately from human review, and cannot promote a draft benchmark to
 human-reviewed status. All 28 human reviews remain pending. AI-reviewed draft
 work can continue under the existing explicit diagnostic flags without claiming
-validated accuracy. The next review batch should address unsupported questions,
-whose absence/scope judgments require more than matching a quote.
+validated accuracy. Unsupported findings record a corpus-scope judgment rather
+than an answer-supporting quote.
 
 Human review can proceed a few questions at a time without editing the benchmark
 to create a subset. `--review-limit 3` exports up to three pending questions,

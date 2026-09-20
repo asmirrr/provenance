@@ -165,6 +165,21 @@ def test_fresh_filing_matches_versioned_ground_truth_and_preserves_pages(monkeyp
             cursor = chunk.raw_end
         assert not page.raw_text[cursor:page.raw_start + len(page.text)].strip()
     bench = Benchmark.model_validate_json((root/'data/benchmark/aapl-2024-10k.v1.json').read_text(encoding='utf-8'))
+    # Validate review provenance against fresh ingestion, without treating an AI
+    # verdict as human approval or inventing evidence for an absent answer.
+    from src.benchmark import AIReview, bind_benchmark, review_markdown, validate_ai_review
+    review = AIReview.model_validate_json(
+        (root/'data/benchmark/aapl-2024-10k.ai-review.v3.json').read_text(encoding='utf-8'))
+    bound = bind_benchmark(doc, bench)
+    validate_ai_review(bound, review)
+    packet = review_markdown(bound, ai_review=review, item_ids=['aapl24-023', 'aapl24-024'])
+    assert 'confirmed' in packet
+    assert bound['pending_review_count'] == 28
+    assert not bound['ready_for_scored_evaluation']
+    for item in bench.items:
+        if item.id in {'aapl24-023', 'aapl24-024'}:
+            assert not item.answerable and item.expected_answer is None
+            assert item.evidence == [] and item.review_status == 'pending'
     report = evaluate_benchmark(doc, bench)
     snapshot = json.loads((root/'data/evaluation/aapl-2024-10k.context-v2.json').read_text(encoding='utf-8'))
     assert report == snapshot
