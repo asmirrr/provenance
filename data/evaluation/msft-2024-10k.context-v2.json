@@ -1,0 +1,273 @@
+{
+  "diagnostic_version": "2.0.0",
+  "benchmark_version": "0.1.0",
+  "benchmark_model_sha256": "9c906cc7b3498a15ff1149ba6495a5c62f354be00b5ce2ef2cb40571d5cda965",
+  "corpus_sha256": "12a356324150db197dc60ad68e39f885cb862aeed31ed68801117e73990f1221",
+  "source_sha256": "0627f4b836ec187868c4bc1b03c58a11cd35fa6815aa0b615be0ad96a5097408",
+  "extractor": "pdfplumber 0.11.10",
+  "chunking": "sentence-v2",
+  "max_chars": 1800,
+  "page_count": 168,
+  "chunk_count": 401,
+  "benchmark_status": "draft_pending_human_review",
+  "question_count": 5,
+  "answerable_question_count": 5,
+  "case_count": 5,
+  "unsupported_item_ids": [],
+  "single_chunk_complete": 4,
+  "target_page_complete": 5,
+  "explicit_pages_complete": 5,
+  "context_max_chars": 8000,
+  "interpretation": "Oracle-selected context availability, not retrieval or answer accuracy. Alternative groups are separate cases. Human review pending for draft labels.",
+  "results": [
+    {
+      "case_id": "msft24-001:primary",
+      "item_id": "msft24-001",
+      "group_id": "primary",
+      "question": "What was Microsoft's total revenue in fiscal 2024?",
+      "expected_answer": "$245,122 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        56
+      ],
+      "supporting_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022",
+          "printed_page": null,
+          "raw_start": 85,
+          "raw_end": 159,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        },
+        {
+          "page": 56,
+          "quote": "Total revenue 245,122 211,915 198,270",
+          "printed_page": null,
+          "raw_start": 246,
+          "raw_end": 283,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 995,
+      "context_error": null
+    },
+    {
+      "case_id": "msft24-002:primary",
+      "item_id": "msft24-002",
+      "group_id": "primary",
+      "question": "What was Microsoft's net income in fiscal 2024?",
+      "expected_answer": "$88,136 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        56
+      ],
+      "supporting_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022",
+          "printed_page": null,
+          "raw_start": 85,
+          "raw_end": 159,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        },
+        {
+          "page": 56,
+          "quote": "Net income $ 88,136 $ 72,361 $ 72,738",
+          "printed_page": null,
+          "raw_start": 761,
+          "raw_end": 798,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 995,
+      "context_error": null
+    },
+    {
+      "case_id": "msft24-003:primary",
+      "item_id": "msft24-003",
+      "group_id": "primary",
+      "question": "What was Microsoft's diluted earnings per share in fiscal 2024?",
+      "expected_answer": "$11.80 per share.",
+      "review_status": "pending",
+      "supporting_pages": [
+        56
+      ],
+      "supporting_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022",
+          "printed_page": null,
+          "raw_start": 85,
+          "raw_end": 159,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        },
+        {
+          "page": 56,
+          "quote": "Diluted $ 11.80 $ 9.68 $ 9.65",
+          "printed_page": null,
+          "raw_start": 847,
+          "raw_end": 876,
+          "chunk_ids": [
+            "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "7e9154d0cb77d659db819be8b79ba3401fd0424800dbc44eac0306724f7bb756"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 995,
+      "context_error": null
+    },
+    {
+      "case_id": "msft24-004:primary",
+      "item_id": "msft24-004",
+      "group_id": "primary",
+      "question": "What was Microsoft's net cash from operations in fiscal 2024?",
+      "expected_answer": "$118,548 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        59
+      ],
+      "supporting_chunk_ids": [
+        "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763"
+      ],
+      "evidence": [
+        {
+          "page": 59,
+          "quote": "(In millions)\nYear Ended June 30, 2024 2023 2022",
+          "printed_page": null,
+          "raw_start": 37,
+          "raw_end": 85,
+          "chunk_ids": [
+            "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        },
+        {
+          "page": 59,
+          "quote": "Net cash from operations 118,548 87,582 89,035",
+          "printed_page": null,
+          "raw_start": 828,
+          "raw_end": 874,
+          "chunk_ids": [
+            "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        }
+      ],
+      "single_chunk_complete": true,
+      "complete_chunk_ids": [
+        "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763"
+      ],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2016,
+      "context_error": null
+    },
+    {
+      "case_id": "msft24-005:primary",
+      "item_id": "msft24-005",
+      "group_id": "primary",
+      "question": "What were Microsoft's cash and cash equivalents at the end of fiscal 2024?",
+      "expected_answer": "$18,315 million.",
+      "review_status": "pending",
+      "supporting_pages": [
+        59
+      ],
+      "supporting_chunk_ids": [
+        "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763",
+        "6fed6171e95688607780b70c9d5870660965bce465c66664897508a0a0df9733"
+      ],
+      "evidence": [
+        {
+          "page": 59,
+          "quote": "(In millions)\nYear Ended June 30, 2024 2023 2022",
+          "printed_page": null,
+          "raw_start": 37,
+          "raw_end": 85,
+          "chunk_ids": [
+            "be45996ba66cdc9b4b578079f76da3155e2d341d9f0004b10cb70ba62e742763"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        },
+        {
+          "page": 59,
+          "quote": "Cash and cash equivalents, end of period $ 18,315 $ 34,704 $ 13,931",
+          "printed_page": null,
+          "raw_start": 1917,
+          "raw_end": 1984,
+          "chunk_ids": [
+            "6fed6171e95688607780b70c9d5870660965bce465c66664897508a0a0df9733"
+          ],
+          "sections": [
+            "ITEM 8. FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA"
+          ]
+        }
+      ],
+      "single_chunk_complete": false,
+      "complete_chunk_ids": [],
+      "target_page_complete": true,
+      "explicit_pages_complete": true,
+      "page_context_chars": 2016,
+      "context_error": null
+    }
+  ]
+}

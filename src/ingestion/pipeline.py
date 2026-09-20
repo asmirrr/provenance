@@ -116,15 +116,18 @@ def ingest(pdf_path: str | Path, metadata: FilingMetadata, max_chars: int = 1800
         text = page.text
         # TOC entries are not section boundaries. After signatures, exhibits are
         # deliberately unclassified rather than inheriting the last SEC item.
-        headings = [] if "TABLE OF CONTENTS" in text or in_exhibits else list(
-            re.finditer(r"(?m)^(?:Item\s+\d{1,2}[A-C]?\.\s+[^\n]+|SIGNATURES)\s*$", text)
+        is_contents = "TABLE OF CONTENTS" in text.upper() or bool(
+            re.search(r"(?m)^INDEX\s*$", text) and re.search(r"(?m)^Page\s*$", text)
+            and re.search(r"(?m)^Item\s+\d", text))
+        headings = [] if is_contents or in_exhibits else list(
+            re.finditer(r"(?mi)^(?:Item\s+\d{1,2}[A-C]?\.\s+[^\n]+|SIGNATURES)\s*$", text)
         )
         cursor = 0
         segments = []
         for heading in headings:
             segments.append((cursor, heading.start(), section))
             section = heading[0].strip()
-            if section == "SIGNATURES":
+            if section.upper() == "SIGNATURES":
                 in_exhibits = True
             cursor = heading.start()
         segments.append((cursor, len(text), section))

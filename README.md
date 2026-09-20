@@ -2,6 +2,46 @@
 
 Traceable financial intelligence, built from source evidence upward.
 
+## Cross-issuer ingestion check: Microsoft FY2024
+
+The issuer-hosted [Microsoft FY2024 10-K PDF](https://microsoft.gcs-web.com/static-files/1c864583-06f7-40cc-a94d-d11400c83cc8)
+is the third source document, filed July 30, 2024 under
+[SEC accession 0000950170-24-087843](https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/0000950170-24-087843-index.htm).
+It exposed a section-label bug: the contents page is titled `INDEX`, and actual
+headings use uppercase `ITEM`. Previously the index entries became section
+boundaries and their final label leaked into the filing body. The parser now
+recognizes the observed `INDEX` / `Page` / `Item` contents pattern and matches
+actual Item headings case-insensitively. Raw extraction is unchanged.
+
+Corrected ingestion preserves **168 PDF pages and 401 chunks**. PDF page 168 has
+no extractable text: it is retained with a warning, not silently discarded or
+claimed to be OCR-processed. Bare numeric footers are retained; `printed_page`
+remains null because the Apple footer recognizer does not apply. Page references
+use exact one-based PDF indices. Wrapped heading titles may still be partial,
+and running headers remain in extracted text; section recognition is heuristic.
+
+```powershell
+curl.exe -L --fail --max-time 60 -o data/raw/msft-2024-10k.pdf 'https://microsoft.gcs-web.com/static-files/1c864583-06f7-40cc-a94d-d11400c83cc8'
+uv run python -m src.ingestion.pipeline data/raw/msft-2024-10k.pdf data/raw/msft-2024-10k.metadata.json data/processed/msft-2024-10k.json
+uv run python -m src.evaluation data/processed/msft-2024-10k.json data/benchmark/msft-2024-10k.v1.json --benchmark --output data/processed/msft-2024-diagnostic.json
+uv run pytest -q
+```
+
+Source SHA-256:
+`0627f4b836ec187868c4bc1b03c58a11cd35fa6815aa0b615be0ad96a5097408`.
+Benchmark 0.1.0 contains five agent-checked extraction cases for revenue, net
+income, diluted EPS, operating cash flow, and ending cash. The header/year/unit
+anchors and rows are pinned in `data/evaluation/msft-2024-10k.context-v2.json`.
+Four cases fit one chunk; all five fit explicit page context. Fresh-PDF regression
+tests check the full snapshot, index exclusion, financial section labels, empty
+page retention, and exhibit labeling. The existing Apple snapshots remain pinned
+to detect regressions rather than being automatically regenerated.
+
+These are draft smoke cases, not human-reviewed accuracy labels. Two issuers are
+useful coverage, not proof of arbitrary-filing support. Next: review the draft
+benchmark labels and prioritize remaining extraction issues from that review,
+before expanding retrieval or generation. No paid API is needed.
+
 ## Second-filing ingestion check
 
 Apple FY2023 now provides a controlled cross-year test of the existing ingestion

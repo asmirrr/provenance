@@ -128,3 +128,22 @@ def test_abbreviations_are_not_sentence_boundaries(abbreviation):
     text = "Intro " + "word " * 10 + abbreviation + " market continued with growth\nand more words after that."
     first = next(spans(text, 0, len(text), 100))
     assert not text[first[0]:first[1]].endswith(abbreviation)
+
+
+def test_index_and_uppercase_headings_do_not_leak_sections(tmp_path, monkeypatch, metadata):
+    path = tmp_path / 'synthetic.pdf'
+    path.write_bytes(b'synthetic')
+    raw = [{'page': 1, 'text': 'INDEX\nPage\nItem 1. Business 3\nItem 8. Statements 56'},
+           {'page': 2, 'text': 'PART I\nItem 1\nIntroductory text'},
+           {'page': 3, 'text': 'ITEM 1. BUSINESS\nBusiness text'},
+           {'page': 4, 'text': 'ITEM 8. FINANCIAL STATEMENTS\nRevenue 10'},
+           {'page': 5, 'text': 'SIGNATURES\nSigned'},
+           {'page': 6, 'text': 'ITEM 1. Exhibit heading'}]
+    monkeypatch.setattr(pipeline, 'extract_pages', lambda _: raw)
+    doc = ingest(path, metadata)
+    labels = {p: {c.section for c in doc.chunks if c.page == p} for p in range(1, 7)}
+    assert labels[1] == labels[2] == labels[6] == {None}
+    assert labels[3] == {'ITEM 1. BUSINESS'}
+    assert labels[4] == {'ITEM 8. FINANCIAL STATEMENTS'}
+    assert labels[5] == {'SIGNATURES'}
+    assert doc.pages[0].raw_text == raw[0]['text']

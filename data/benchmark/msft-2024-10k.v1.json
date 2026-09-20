@@ -1,0 +1,138 @@
+{
+  "version": "0.1.0",
+  "status": "draft_pending_human_review",
+  "source_sha256": "0627f4b836ec187868c4bc1b03c58a11cd35fa6815aa0b615be0ad96a5097408",
+  "review_method": "Five agent-drafted cross-issuer extraction smoke cases. Not human-reviewed or held-out accuracy evidence.",
+  "items": [
+    {
+      "id": "msft24-001",
+      "question": "What was Microsoft's total revenue in fiscal 2024?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$245,122 million.",
+      "expected_claims": [
+        "$245,122 million."
+      ],
+      "difficulty": "easy",
+      "notes": "Agent checked against the actual extracted year/unit header and row. Human review pending.",
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022"
+        },
+        {
+          "page": 56,
+          "quote": "Total revenue 245,122 211,915 198,270"
+        }
+      ],
+      "alternative_evidence": [],
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_on": null
+    },
+    {
+      "id": "msft24-002",
+      "question": "What was Microsoft's net income in fiscal 2024?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$88,136 million.",
+      "expected_claims": [
+        "$88,136 million."
+      ],
+      "difficulty": "easy",
+      "notes": "Agent checked against the actual extracted year/unit header and row. Human review pending.",
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022"
+        },
+        {
+          "page": 56,
+          "quote": "Net income $ 88,136 $ 72,361 $ 72,738"
+        }
+      ],
+      "alternative_evidence": [],
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_on": null
+    },
+    {
+      "id": "msft24-003",
+      "question": "What was Microsoft's diluted earnings per share in fiscal 2024?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$11.80 per share.",
+      "expected_claims": [
+        "$11.80 per share."
+      ],
+      "difficulty": "easy",
+      "notes": "Agent checked against the actual extracted year/unit header and row. Human review pending.",
+      "evidence": [
+        {
+          "page": 56,
+          "quote": "(In millions, except per share amounts)\nYear Ended June 30, 2024 2023 2022"
+        },
+        {
+          "page": 56,
+          "quote": "Diluted $ 11.80 $ 9.68 $ 9.65"
+        }
+      ],
+      "alternative_evidence": [],
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_on": null
+    },
+    {
+      "id": "msft24-004",
+      "question": "What was Microsoft's net cash from operations in fiscal 2024?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$118,548 million.",
+      "expected_claims": [
+        "$118,548 million."
+      ],
+      "difficulty": "easy",
+      "notes": "Agent checked against the actual extracted year/unit header and row. Human review pending.",
+      "evidence": [
+        {
+          "page": 59,
+          "quote": "(In millions)\nYear Ended June 30, 2024 2023 2022"
+        },
+        {
+          "page": 59,
+          "quote": "Net cash from operations 118,548 87,582 89,035"
+        }
+      ],
+      "alternative_evidence": [],
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_on": null
+    },
+    {
+      "id": "msft24-005",
+      "question": "What were Microsoft's cash and cash equivalents at the end of fiscal 2024?",
+      "category": "table",
+      "answerable": true,
+      "expected_answer": "$18,315 million.",
+      "expected_claims": [
+        "$18,315 million."
+      ],
+      "difficulty": "easy",
+      "notes": "Agent checked against the actual extracted year/unit header and row. Human review pending.",
+      "evidence": [
+        {
+          "page": 59,
+          "quote": "(In millions)\nYear Ended June 30, 2024 2023 2022"
+        },
+        {
+          "page": 59,
+          "quote": "Cash and cash equivalents, end of period $ 18,315 $ 34,704 $ 13,931"
+        }
+      ],
+      "alternative_evidence": [],
+      "review_status": "pending",
+      "reviewer": null,
+      "reviewed_on": null
+    }
+  ]
+}
