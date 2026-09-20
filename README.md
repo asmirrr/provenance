@@ -4,6 +4,25 @@ Traceable financial intelligence, built from source evidence upward.
 
 ## Review a small benchmark batch
 
+The subsequent unsupported-question review is recorded in
+`data/benchmark/aapl-2024-10k.ai-review.v2.json`, preserving the three earlier
+table findings and adding five scope/absence assessments. Future fiscal-2026
+sales, a September-2026 closing price, and an exact guaranteed future return are
+confirmed unsupported by this historical corpus. The Vision Pro standalone
+revenue and iPhone unit-count labels remain **inconclusive AI findings**: relevant
+disclosures show broader product categories and dollar sales, but inspected
+passages and phrase searches cannot prove exhaustive absence. Their draft labels
+are retained provisionally; no answer or ground-truth evidence is fabricated.
+
+AI review now accepts `inconclusive` alongside `confirmed` and
+`correction_required`. None of these verdicts updates human review status or
+establishes benchmark accuracy. Record v2 is a new file; the earlier review remains
+available. To inspect this batch, use `--review-limit 5 --ai-review
+data/benchmark/aapl-2024-10k.ai-review.v2.json` with the benchmark command below.
+Next: broaden the absence review for those two disclosures before treating their
+unsupported labels as established. They should be flagged as uncertain in any
+research interpretation of draft abstention results.
+
 The three Note 4 cases (`aapl24-026`–`028`) now have a separately recorded AI review
 in `data/benchmark/aapl-2024-10k.ai-review.v1.json`. On September 20, 2026, the AI
 assistant checked both rendered PDF pages 39–40, verified fresh extraction against

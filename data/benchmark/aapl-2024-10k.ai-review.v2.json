@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "review_type": "ai",
+  "reviewer": "Codex AI assistant",
+  "reviewed_on": "2026-09-20",
+  "source_sha256": "319e1217afe72f194575e63350ea6c813eaf5caf0c24e59ce8b221fc1b3ea0d4",
+  "benchmark_model_sha256": "bcb409cb1bc62d0279db2a30409e7fbbf73390013cff6041ea06b6222f1f5935",
+  "method": "Source PDF SHA-256 verified; fresh pdfplumber extraction of PDF pages 39 and 40 matched persisted raw text; both full pages visually inspected at 110 DPI; columns, year headers, units and footnotes checked. Comparison arithmetic independently evaluated in Python. Same AI development workflow, not an independent human adjudication; alternative relevance is not exhaustive. Additional unsupported-label review: searched all 121 extracted pages for Vision Pro, unit sales, forward-looking and stock price; read relevant context on pages 1, 4, 8, 20, 23, 26, 38 and 49. Re-extracted those pages and verified exact agreement and PDF hash. No new visual inspection claimed for this added batch. Search absence is not proof of nondisclosure; two absence judgments remain inconclusive.",
+  "items": [
+    {
+      "item_id": "aapl24-026",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the fourth numeric column (Fair Value): 63,939 for 2024 on PDF page 39 and 70,890 for 2023 on page 40. The introduction specifies millions and both dates. Python arithmetic confirms 63,939 - 70,890 = -6,951 million. The dates, units, columns, answer and selected anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-027",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the 2024 Cash and Cash Equivalents total of 29,943 million and footnote marker (2) on PDF page 39. Footnote (2) on page 40 explicitly states September 28, 2024, $2.6 billion held in escrow and restricted from general use for the State Aid Decision. It refers back to 2024 despite sitting below the 2023 table. Answer and anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-028",
+      "verdict": "confirmed",
+      "pages": [
+        39,
+        40
+      ],
+      "findings": "Visually confirmed the 2023 Corporate debt securities row, Unrealized Losses column: (5,956), not the fair value of 70,890 or the 2024 loss of (1,953). Units in millions and dates are supplied on page 39. Answer and cross-page anchors are correct; no correction required."
+    },
+    {
+      "item_id": "aapl24-021",
+      "verdict": "confirmed",
+      "pages": [
+        1,
+        4,
+        8
+      ],
+      "findings": "The source is a fiscal-2024 filing. Page 4 distinguishes expectations from historical/current facts and says forward-looking statements are not guarantees. Fiscal-2026 realized net sales cannot be established from this corpus. Keep unsupported; a forecast or prior-year result is not the requested fact."
+    },
+    {
+      "item_id": "aapl24-022",
+      "verdict": "confirmed",
+      "pages": [
+        1,
+        20,
+        23
+      ],
+      "findings": "The requested September 11, 2026 closing price postdates this filing. Historical stock performance on page 23 and price-volatility discussion on page 20 cannot establish that later daily close. Keep unsupported; requires an external market source."
+    },
+    {
+      "item_id": "aapl24-023",
+      "verdict": "inconclusive",
+      "pages": [
+        4,
+        26,
+        38,
+        49
+      ],
+      "findings": "Page 4 places spatial computers and Vision Pro in Wearables. Pages 26 and 38 disclose Wearables, Home and Accessories net sales of 37,005 million, not Vision Pro standalone revenue; page 49 describes geographic segments. The sole Vision Pro text-search match was page 4. Do not substitute aggregate revenue. These checks support provisional abstention but do not prove exhaustive absence; retain the draft unsupported label pending broader review."
+    },
+    {
+      "item_id": "aapl24-024",
+      "verdict": "inconclusive",
+      "pages": [
+        4,
+        26,
+        38
+      ],
+      "findings": "Pages 26 and 38 report iPhone net sales of 201,183 million dollars, not a count of phones. Revenue allocation on page 38 includes hardware, software and bundled services. No exact unit sales phrase was found, but phrase absence cannot prove the count is undisclosed. Do not infer units from revenue or a guessed selling price; retain provisional unsupported status pending broader review."
+    },
+    {
+      "item_id": "aapl24-025",
+      "verdict": "confirmed",
+      "pages": [
+        4,
+        8,
+        20,
+        23
+      ],
+      "findings": "Page 4 says forward-looking statements are not guarantees; page 8 warns against using historical financial trends to anticipate future results; page 20 discusses stock volatility; page 23 says past price performance is not necessarily indicative of future performance. The requested exact guaranteed investment return is not established by this filing. A qualitative no-guarantee explanation is possible, but not the requested numerical return."
+    }
+  ]
+}

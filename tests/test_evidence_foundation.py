@@ -466,3 +466,30 @@ def test_ai_review_is_separate_and_bound_to_exact_labels(filing, benchmark):
                   [review.items[0].model_copy(update={'pages':[999]})]]:
         with pytest.raises(ValueError):
             validate_ai_review(bound,review.model_copy(update={'items':items}))
+
+
+def test_inconclusive_ai_review_does_not_promote_absence_labels(filing, benchmark):
+    from src.benchmark import AIReview, validate_ai_review
+    bound=bind_benchmark(filing,benchmark)
+    review=AIReview(schema_version=1,review_type='ai',reviewer='Synthetic AI',reviewed_on='2024-11-02',
+        source_sha256=bound['source_sha256'],benchmark_model_sha256=bound['benchmark_model_sha256'],
+        method='Synthetic absence review',items=[dict(item_id='test-2',verdict='inconclusive',pages=[1,2],
+        findings='Relevant passages inspected; absence is not proven.')])
+    validate_ai_review(bound,review)
+    text=review_markdown(bound,ai_review=review,item_ids=['test-2'])
+    assert 'AI review only: **inconclusive**' in text
+    assert not bound['ready_for_scored_evaluation'] and bound['pending_review_count']==2
+    assert benchmark.items[1].evidence==[] and benchmark.items[1].review_status=='pending'
+
+
+def test_recorded_apple_ai_review_keeps_absence_uncertainty_explicit():
+    from src.benchmark import AIReview
+    root=Path(__file__).resolve().parents[1]
+    review=AIReview.model_validate_json((root/'data/benchmark/aapl-2024-10k.ai-review.v2.json').read_text(encoding='utf-8'))
+    benchmark=Benchmark.model_validate_json((root/'data/benchmark/aapl-2024-10k.v1.json').read_text(encoding='utf-8'))
+    assert review.benchmark_model_sha256==hashlib.sha256(benchmark.model_dump_json().encode()).hexdigest()
+    findings={i.item_id:i.verdict for i in review.items}
+    assert len(findings)==8
+    assert findings['aapl24-023']==findings['aapl24-024']=='inconclusive'
+    assert all(findings[i]=='confirmed' for i in ['aapl24-021','aapl24-022','aapl24-025'])
+    assert all(i.review_status=='pending' for i in benchmark.items)

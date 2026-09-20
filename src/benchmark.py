@@ -76,7 +76,7 @@ class Benchmark(BaseModel):
 class AIReviewFinding(BaseModel):
     model_config = ConfigDict(extra="forbid")
     item_id: str = Field(min_length=1)
-    verdict: Literal["confirmed", "correction_required"]
+    verdict: Literal["confirmed", "correction_required", "inconclusive"]
     pages: list[int] = Field(min_length=1)
     findings: str = Field(min_length=1)
 
